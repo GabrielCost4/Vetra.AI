@@ -24,8 +24,12 @@
         <app-icon name="close" />
       </button>
       <a class="brand" href="/" aria-label="Vetra.AI — início"
-        ><img src="brand/vetra-mark.png" alt="" width="48" height="48" /><span>VETRA.AI</span></a
-      >
+        ><img
+          [src]="theme() === 'dark' ? 'brand/vetra-logo-dark.png' : 'brand/vetra-logo-light.png'"
+          alt="Vetra.AI"
+          width="2172"
+          height="724"
+      /></a>
       <button
         class="collapse-button"
         (click)="sidebarCollapsed.set(!sidebarCollapsed())"

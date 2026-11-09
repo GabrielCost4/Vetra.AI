@@ -465,3 +465,16 @@ app-root .sidebar-backdrop {
     font-size: 15px;
   }
 }
+/* Full wordmark replaces the separate symbol and brand text. */
+app-root .sidebar .sidebar-header .brand {
+  flex: 1 1 auto;
+  max-width: 190px;
+  min-width: 0;
+  overflow: hidden;
+}
+app-root .sidebar .sidebar-header .brand img {
+  display: block;
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+}
