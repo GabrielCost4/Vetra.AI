@@ -39,7 +39,7 @@ O horário exibido na identificação corresponde à consulta atual na interface
 ## Tecnologias
 
 <p align="center">
-  <img src="DOCS/assets/imagens/tecnologias.svg" alt="Angular, TypeScript, HTML, CSS, Python, FastAPI, TensorFlow, OpenCV, PostgreSQL, Docker e Git" width="660" />
+  <img src="DOCS/tecnologias.svg" alt="Angular, TypeScript, HTML, CSS, Python, FastAPI, TensorFlow, OpenCV, PostgreSQL, Docker e Git" width="660" />
 </p>
 
 | Parte | Tecnologias e responsabilidades |
