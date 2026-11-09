@@ -2,13 +2,14 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { FaceResponse, RecognizeFaceResponse, RegisterFaceResponse } from '../models/face.model';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root',
 })
 export class FaceService {
   private readonly http = inject(HttpClient);
-  private readonly apiUrl = 'http://127.0.0.1:8000/api/faces';
+  private readonly apiUrl = `${environment.apiUrl}/faces`;
 
   registerFace(name: string, imageBlob: Blob, filename = 'capture.jpg'): Observable<RegisterFaceResponse> {
     const formData = new FormData();
