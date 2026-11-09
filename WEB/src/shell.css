@@ -621,10 +621,7 @@ app-root .sidebar .sidebar-header .brand img {
     min-height: 42px;
   }
   .zoom-camera {
-    right: 8px;
-    bottom: 8px;
-    width: 36px;
-    height: 36px;
+    display: none;
   }
 }
 @media (prefers-reduced-motion: reduce) {
