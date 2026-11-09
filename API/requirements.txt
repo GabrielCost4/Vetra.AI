@@ -3,3 +3,10 @@ pgvector
 psycopg[binary]
 sqlalchemy
 alembic
+python-dotenv
+pydantic
+python-multipart
+deepface
+tf-keras
+numpy
+opencv-python
