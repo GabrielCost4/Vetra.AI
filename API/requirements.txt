@@ -1,3 +1,5 @@
 fastapi
 pgvector
 psycopg[binary]
+sqlalchemy
+alembic
