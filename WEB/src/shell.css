@@ -1,0 +1,467 @@
+﻿app-root .sidebar {
+  position: sticky;
+  top: 0;
+  height: 100dvh;
+  border-right: 1px solid var(--line);
+  padding: 30px 14px;
+  overflow: hidden;
+}
+app-root .brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+  margin: 0 20px 50px;
+  white-space: nowrap;
+  font-size: 28px;
+  font-weight: 650;
+  letter-spacing: 0.2px;
+}
+app-root .brand img {
+  object-fit: contain;
+  flex-shrink: 0;
+}
+app-root .tabs {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+app-root .tabs button {
+  position: relative;
+  border: 0;
+  border-radius: 11px;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 16px 25px;
+  background: transparent;
+  text-align: left;
+  white-space: nowrap;
+  font-size: 17px;
+  min-height: 52px;
+}
+app-root .tabs app-icon {
+  width: 26px;
+  height: 26px;
+}
+app-root .tabs button.active {
+  background: var(--accent-soft);
+}
+app-root .tabs button.active app-icon {
+  color: var(--accent);
+}
+app-root .tabs button:hover {
+  background: var(--raised);
+}
+app-root .sidebar-divider {
+  margin: 28px 18px;
+  border-top: 1px solid var(--line);
+}
+app-root .collapse-button {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: transparent;
+  border: 0;
+  color: var(--muted);
+  padding: 12px 25px;
+  font-size: 13px;
+  white-space: nowrap;
+  border-radius: 8px;
+}
+app-root .collapse-button:hover {
+  background: var(--raised);
+}
+app-root .sidebar-collapsed .brand {
+  margin-left: 6px;
+  gap: 0;
+}
+app-root .sidebar-collapsed .brand span,
+app-root .sidebar-collapsed .tabs span,
+app-root .sidebar-collapsed .collapse-button span {
+  display: none;
+}
+app-root .sidebar-collapsed .tabs button {
+  padding: 16px 17px;
+}
+app-root .sidebar-collapsed .collapse-button {
+  padding: 12px 19px;
+}
+app-root .sidebar-collapsed .sidebar-divider {
+  margin: 28px 8px;
+}
+app-root .theme-switch {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  height: 51px;
+  padding: 4px;
+  border: 1px solid var(--line);
+  border-radius: 30px;
+}
+app-root .theme-switch button {
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 41px;
+  border-radius: 24px;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+}
+app-root .theme-switch button.selected {
+  color: var(--accent-ink);
+}
+@media (max-width: 1250px) {
+  app-root .brand {
+    font-size: 22px;
+    margin-left: 10px;
+  }
+  app-root .tabs button {
+    padding-left: 18px;
+    gap: 16px;
+    font-size: 15px;
+  }
+}
+@media (max-width: 650px) {
+  app-root .sidebar {
+    padding: 24px 8px;
+  }
+  app-root .brand {
+    margin: 0 6px 38px;
+    gap: 0;
+  }
+  app-root .brand img {
+    width: 44px;
+    height: 44px;
+  }
+  app-root .brand span,
+  app-root .tabs span,
+  app-root .collapse-button span {
+    display: none;
+  }
+  app-root .tabs button {
+    padding: 15px 17px;
+  }
+  app-root .sidebar-divider {
+    margin: 24px 8px;
+  }
+  app-root .collapse-button {
+    display: none;
+  }
+  app-root .theme-switch {
+    height: 44px;
+  }
+  app-root .theme-switch button {
+    width: 36px;
+    height: 34px;
+  }
+}
+app-root .theme-switch {
+  position: relative;
+  isolation: isolate;
+  --thumb-width: 46px;
+  --thumb-height: 41px;
+  --thumb-offset: 50px;
+}
+app-root .theme-switch::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  left: 4px;
+  top: 4px;
+  width: var(--thumb-width);
+  height: var(--thumb-height);
+  border-radius: 24px;
+  background: var(--accent);
+  transform: translateX(var(--thumb-offset));
+  transition:
+    transform 0.32s cubic-bezier(0.22, 1, 0.36, 1),
+    background-color 0.3s ease;
+}
+[data-theme='light'] app-root .theme-switch::before {
+  transform: translateX(0);
+}
+app-root .theme-switch button.selected {
+  background: transparent;
+}
+app-root .theme-switch button {
+  position: relative;
+}
+@media (max-width: 1000px) {
+  app-root .brand {
+    margin-left: 6px;
+    gap: 0;
+  }
+  app-root .brand span,
+  app-root .tabs span,
+  app-root .collapse-button span {
+    display: none;
+  }
+  app-root .tabs button {
+    padding: 16px 17px;
+  }
+  app-root .collapse-button {
+    padding: 12px 19px;
+  }
+}
+@media (max-width: 650px) {
+  app-root .theme-switch {
+    --thumb-width: 36px;
+    --thumb-height: 34px;
+    --thumb-offset: 40px;
+  }
+}
+app-root .toast-region {
+  position: fixed;
+  right: 166px;
+  top: 18px;
+  z-index: 100;
+  width: min(410px, calc(100vw - 32px));
+}
+app-root .toast {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: var(--panel);
+  border: 1px solid #295f43;
+  border-radius: 10px;
+  padding: 16px 20px;
+  box-shadow: 0 8px 32px #0002;
+}
+app-root .toast.error {
+  border-color: var(--coral);
+}
+app-root .toast-mark {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  background: var(--accent-soft);
+  color: var(--accent);
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+}
+app-root .error .toast-mark {
+  color: var(--coral);
+}
+app-root .toast strong {
+  font-size: 14px;
+  font-weight: 600;
+}
+app-root .toast p {
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.5;
+  margin-top: 4px;
+}
+app-root .toast button {
+  margin-left: auto;
+  background: none;
+  border: 0;
+  font-size: 24px;
+  color: var(--muted);
+}
+@media (max-width: 650px) {
+  app-root .toast-region {
+    top: 12px;
+    right: 12px;
+    width: calc(100vw - 24px);
+  }
+}
+app-root .toast-region {
+  pointer-events: none;
+}
+app-root .toast {
+  pointer-events: auto;
+}
+@media (max-width: 650px) {
+  app-root .toast {
+    padding: 12px;
+    gap: 10px;
+  }
+  app-root .toast strong {
+    font-size: 12px;
+  }
+  app-root .toast p {
+    font-size: 10px;
+  }
+}
+/* Sidebar header controls stay accessible in both menu states. */
+app-root .sidebar-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 48px;
+  margin: 0 8px 42px;
+}
+app-root .sidebar-header .brand {
+  margin: 0;
+  gap: 8px;
+  font-size: 24px;
+  min-width: 0;
+}
+app-root .sidebar-header .brand img {
+  width: 40px;
+  height: 40px;
+}
+app-root .sidebar-header .collapse-button {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  margin-left: auto;
+  border-radius: 7px;
+}
+app-root .sidebar-header .collapse-button app-icon {
+  width: 22px;
+  height: 22px;
+}
+app-root .sidebar-collapsed .sidebar-header {
+  justify-content: center;
+  margin-left: 0;
+  margin-right: 0;
+}
+app-root .sidebar-collapsed .sidebar-header .brand {
+  display: none;
+}
+app-root .sidebar-collapsed .sidebar-header .collapse-button {
+  margin-left: 0;
+}
+@media (max-width: 1250px) {
+  app-root .sidebar-header {
+    gap: 4px;
+    margin-left: 0;
+    margin-right: 0;
+  }
+  app-root .sidebar-header .brand {
+    font-size: 19px;
+    gap: 4px;
+  }
+  app-root .sidebar-header .brand img {
+    width: 32px;
+    height: 32px;
+  }
+}
+@media (max-width: 1000px) {
+  app-root .sidebar-header {
+    justify-content: center;
+  }
+  app-root .sidebar-header .brand {
+    display: none;
+  }
+  app-root .sidebar-header .collapse-button {
+    margin-left: 0;
+  }
+}
+@media (min-width: 1251px) {
+  app-root .sidebar-header {
+    margin-left: 0;
+    margin-right: 0;
+    gap: 8px;
+  }
+  app-root .sidebar-header .brand {
+    font-size: 22px;
+    gap: 6px;
+  }
+  app-root .sidebar-header .brand img {
+    width: 32px;
+    height: 32px;
+  }
+  app-root .tabs button {
+    padding-left: 16px;
+    padding-right: 16px;
+    gap: 16px;
+    font-size: 15px;
+  }
+}
+app-root .mobile-menu-button,
+app-root .mobile-close,
+app-root .sidebar-backdrop {
+  display: none;
+}
+@media (max-width: 650px) {
+  :root app-root .shell {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  :root app-root .topbar {
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+  app-root .mobile-menu-button,
+  app-root .mobile-close {
+    display: grid;
+    place-items: center;
+    width: 42px;
+    height: 42px;
+    background: transparent;
+    border: 0;
+    border-radius: 8px;
+    color: var(--text);
+  }
+  app-root .mobile-menu-button:hover,
+  app-root .mobile-close:hover {
+    background: var(--raised);
+  }
+  app-root .sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: min(280px, calc(100vw - 48px));
+    height: 100dvh;
+    z-index: 120;
+    background: var(--bg);
+    transform: translateX(-100%);
+    visibility: hidden;
+    transition:
+      transform 0.25s ease,
+      visibility 0.25s,
+      background-color 0.3s ease;
+  }
+  app-root .mobile-menu-open .sidebar {
+    transform: translateX(0);
+    visibility: visible;
+  }
+  app-root .sidebar-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 110;
+    background: #0008;
+    border: 0;
+    padding: 0;
+  }
+  app-root .sidebar .sidebar-header {
+    justify-content: flex-start;
+    gap: 8px;
+    margin: 0 6px 30px;
+  }
+  app-root .sidebar .sidebar-header .brand {
+    display: flex;
+    font-size: 21px;
+    gap: 8px;
+  }
+  app-root .sidebar .sidebar-header .brand span,
+  app-root .sidebar .tabs span {
+    display: inline;
+  }
+  app-root .sidebar .sidebar-header .brand img {
+    width: 32px;
+    height: 32px;
+  }
+  app-root .sidebar .collapse-button {
+    display: none;
+  }
+  app-root .sidebar .mobile-close {
+    order: 2;
+    margin-left: auto;
+    flex-shrink: 0;
+  }
+  app-root .sidebar .tabs button {
+    gap: 16px;
+    padding: 14px 18px;
+    font-size: 15px;
+  }
+}
