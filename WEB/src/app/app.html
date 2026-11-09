@@ -1,332 +1,363 @@
-<div class="vetra-container">
-  <!-- HEADER -->
-  <header class="vetra-header">
-    <div class="header-brand">
-      <div class="logo-mark">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="12" cy="12" r="10"></circle>
-          <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"></path>
-          <path d="M2 12h20"></path>
-        </svg>
-      </div>
-      <div>
-        <h1>Vetra.AI</h1>
-        <p class="subtitle">Reconhecimento Facial com DeepFace + FaceNet512 & pgvector</p>
+<div
+  class="shell"
+  [class.sidebar-collapsed]="sidebarCollapsed()"
+  [class.mobile-menu-open]="mobileMenuOpen()"
+>
+  @if (mobileMenuOpen()) {
+    <button class="sidebar-backdrop" aria-label="Fechar menu" (click)="closeMobileMenu()"></button>
+  }
+  <aside
+    id="main-sidebar"
+    class="sidebar"
+    aria-label="Navegação principal"
+    [attr.role]="mobileMenuOpen() ? 'dialog' : null"
+    [attr.aria-modal]="mobileMenuOpen() ? 'true' : null"
+    (keydown)="onSidebarKeydown($event)"
+  >
+    <div class="sidebar-header">
+      <button
+        id="mobile-menu-close"
+        class="mobile-close"
+        aria-label="Fechar menu"
+        (click)="closeMobileMenu()"
+      >
+        <app-icon name="close" />
+      </button>
+      <a class="brand" href="/" aria-label="Vetra.AI — início"
+        ><img src="brand/vetra-mark.png" alt="" width="48" height="48" /><span>VETRA.AI</span></a
+      >
+      <button
+        class="collapse-button"
+        (click)="sidebarCollapsed.set(!sidebarCollapsed())"
+        [attr.aria-expanded]="!sidebarCollapsed()"
+        [attr.aria-label]="sidebarCollapsed() ? 'Expandir barra lateral' : 'Recolher barra lateral'"
+        [title]="sidebarCollapsed() ? 'Expandir barra lateral' : 'Recolher barra lateral'"
+      >
+        <app-icon name="panel" />
+      </button>
+    </div>
+    <nav aria-label="Seções" class="tabs">
+      <button
+        [class.active]="activeTab() === 'recognize'"
+        (click)="setTab('recognize')"
+        [attr.aria-current]="activeTab() === 'recognize' ? 'page' : null"
+        title="Reconhecimento"
+      >
+        <app-icon name="camera" /><span>Reconhecimento</span>
+      </button>
+      <button
+        [class.active]="activeTab() === 'register'"
+        (click)="setTab('register')"
+        [attr.aria-current]="activeTab() === 'register' ? 'page' : null"
+        title="Cadastro facial"
+      >
+        <app-icon /><span>Cadastro facial</span>
+      </button>
+      <button
+        [class.active]="activeTab() === 'manage'"
+        (click)="setTab('manage')"
+        [attr.aria-current]="activeTab() === 'manage' ? 'page' : null"
+        title="Pessoas"
+      >
+        <app-icon name="users" /><span>Pessoas</span>
+      </button>
+    </nav>
+    <div class="sidebar-divider"></div>
+  </aside>
+  <main [attr.inert]="mobileMenuOpen() ? '' : null">
+    <div class="topbar">
+      <button
+        #mobileMenuTrigger
+        class="mobile-menu-button"
+        aria-label="Abrir menu"
+        aria-controls="main-sidebar"
+        [attr.aria-expanded]="mobileMenuOpen()"
+        (click)="openMobileMenu()"
+      >
+        <app-icon name="menu" />
+      </button>
+      <div class="theme-switch" role="group" aria-label="Tema">
+        <button
+          (click)="setTheme('light')"
+          [class.selected]="theme() === 'light'"
+          aria-label="Ativar tema claro"
+          [attr.aria-pressed]="theme() === 'light'"
+        >
+          <app-icon name="sun" /></button
+        ><button
+          (click)="setTheme('dark')"
+          [class.selected]="theme() === 'dark'"
+          aria-label="Ativar tema escuro"
+          [attr.aria-pressed]="theme() === 'dark'"
+        >
+          <app-icon name="moon" />
+        </button>
       </div>
     </div>
-
-    <div class="header-badges">
-      <span class="badge badge-tech">
-        <span class="status-dot green"></span>
-        PostgreSQL 18 + pgvector
-      </span>
-      <span class="badge badge-tech">
-        <span class="status-dot cyan"></span>
-        FaceNet512 (512-dim)
-      </span>
+    <div class="page-heading">
+      <h1>
+        {{
+          activeTab() === 'manage'
+            ? 'Pessoas cadastradas'
+            : activeTab() === 'register'
+              ? 'Cadastro facial'
+              : 'Reconhecimento facial'
+        }}
+      </h1>
+      <p>
+        {{
+          activeTab() === 'manage'
+            ? 'Consulte e gerencie os cadastros faciais.'
+            : activeTab() === 'register'
+              ? 'Capture ou envie uma imagem para cadastrar uma pessoa.'
+              : 'Capture ou envie uma imagem para identificar uma pessoa.'
+        }}
+      </p>
     </div>
-  </header>
-
-  <!-- NAVIGATION TABS -->
-  <nav class="vetra-tabs">
-    <button
-      class="tab-btn"
-      [class.active]="activeTab() === 'recognize'"
-      (click)="setTab('recognize')">
-      <span class="tab-icon">🔍</span>
-      Reconhecimento Facial
-    </button>
-    <button
-      class="tab-btn"
-      [class.active]="activeTab() === 'register'"
-      (click)="setTab('register')">
-      <span class="tab-icon">👤</span>
-      Cadastrar Rosto
-    </button>
-    <button
-      class="tab-btn"
-      [class.active]="activeTab() === 'manage'"
-      (click)="setTab('manage')">
-      <span class="tab-icon">📋</span>
-      Pessoas Cadastradas
-      <span class="tab-counter">{{ faces().length }}</span>
-    </button>
-  </nav>
-
-  <!-- MAIN CONTENT -->
-  <main class="vetra-main">
-    <!-- VIEW 1 & 2: RECONHECIMENTO E CADASTRO (LAYOUT DE CAPTURA + AÇÃO) -->
-    <div *ngIf="activeTab() !== 'manage'" class="split-view">
-      <!-- PAINEL DA CÂMERA / IMAGEM -->
-      <section class="card camera-card">
-        <div class="card-header">
-          <h3>
-            <span *ngIf="cameraActive()">📹 Câmera ao vivo</span>
-            <span *ngIf="!cameraActive() && previewUrl()">🖼️ Imagem Capturada</span>
-            <span *ngIf="!cameraActive() && !previewUrl()">📷 Captura de Rosto</span>
-          </h3>
-          <span *ngIf="cameraActive()" class="live-indicator">
-            <span class="pulse-dot"></span> AO VIVO
-          </span>
-        </div>
-
-        <div class="camera-viewport">
-          <!-- Video element da webcam -->
-          <video
-            #videoElement
-            autoplay
-            playsinline
-            muted
-            [class.hidden]="!cameraActive() || previewUrl()">
-          </video>
-
-          <!-- Preview da imagem capturada ou selecionada -->
-          <img
-            *ngIf="previewUrl()"
-            [src]="previewUrl()"
-            alt="Preview do rosto capturado"
-            class="image-preview" />
-
-          <!-- Placeholder se a câmera estiver desligada e sem preview -->
-          <div *ngIf="!cameraActive() && !previewUrl()" class="camera-placeholder">
-            <div class="placeholder-icon">📷</div>
-            <p>Câmera pausada ou não disponível</p>
-            <button class="btn btn-secondary btn-sm" (click)="startCamera()">
-              Ativar Câmera
-            </button>
+    @if (activeTab() !== 'manage') {
+      <div class="capture-layout">
+        <section class="camera-card" aria-label="Captura facial">
+          <div class="panel-heading">
+            <h2>
+              <app-icon name="camera" /><span><em>01.</em> Captura de imagem</span>
+            </h2>
+            <span class="camera-status"
+              ><i [class.live]="cameraActive()"></i
+              >{{
+                cameraActive()
+                  ? 'Câmera ativa'
+                  : previewUrl()
+                    ? 'Imagem selecionada'
+                    : 'Câmera desligada'
+              }}</span
+            >
           </div>
-
-          <!-- Moldura e mira facial sobreposta -->
-          <div *ngIf="cameraActive() && !previewUrl()" class="face-guide">
-            <div class="face-oval"></div>
-            <div class="scan-line"></div>
-            <span class="guide-tip">Posicione o rosto no centro</span>
-          </div>
-
-          <!-- Canvas oculto para tirar snapshot -->
-          <canvas #canvasElement style="display: none;"></canvas>
-        </div>
-
-        <!-- Alerta de erro da câmera se houver -->
-        <div *ngIf="cameraError()" class="alert alert-warning">
-          {{ cameraError() }}
-        </div>
-
-        <!-- CONTROLES DA CÂMERA -->
-        <div class="camera-controls">
-          <button
-            *ngIf="cameraActive() && !previewUrl()"
-            class="btn btn-primary capture-btn"
-            (click)="captureSnapshot()">
-            📸 Tirar Foto
-          </button>
-
-          <button
-            *ngIf="previewUrl()"
-            class="btn btn-secondary"
-            (click)="retakePhoto()">
-            🔄 Nova Captura / Câmera
-          </button>
-
-          <label class="btn btn-outline file-upload-label">
-            📁 Enviar Arquivo
-            <input
-              type="file"
-              accept="image/*"
-              (change)="onFileSelected($event)"
-              style="display: none;" />
-          </label>
-        </div>
-      </section>
-
-      <!-- PAINEL DE AÇÃO E RESULTADOS -->
-      <section class="card action-card">
-        <!-- SEÇÃO: RECONHECER -->
-        <div *ngIf="activeTab() === 'recognize'">
-          <div class="card-header">
-            <h3>Identificação Biométrica</h3>
-          </div>
-          <p class="description">
-            Capture ou carregue a foto de uma pessoa para realizar a comparação por vetor
-            (FaceNet512) com os rostos já gravados no PostgreSQL.
-          </p>
-
-          <div class="action-buttons">
-            <button
-              class="btn btn-primary btn-block btn-lg"
-              [disabled]="!capturedImageBlob() || isRecognizing()"
-              (click)="executeRecognition()">
-              <span *ngIf="!isRecognizing()">🔍 Reconhecer Pessoa</span>
-              <span *ngIf="isRecognizing()" class="spinner-inline">Processando DeepFace...</span>
-            </button>
-          </div>
-
-          <div *ngIf="!capturedImageBlob()" class="instruction-box">
-            💡 Dica: capture uma foto pela webcam ao lado ou selecione um arquivo de imagem.
-          </div>
-
-          <!-- MENSAGEM DE ERRO -->
-          <div *ngIf="recognitionError()" class="alert alert-danger">
-            <strong>Atenção:</strong> {{ recognitionError() }}
-          </div>
-
-          <!-- RESULTADO DO RECONHECIMENTO -->
-          <div *ngIf="recognitionResult()" class="result-box">
-            <!-- CASO 1: RECONHECIDO COM SUCESSO -->
-            <div *ngIf="recognitionResult()?.matched" class="match-success">
-              <div class="match-header">
-                <div class="match-badge">✅ IDENTIFICADO</div>
-                <h2 class="matched-name">{{ recognitionResult()?.name }}</h2>
-              </div>
-
-              <div class="confidence-section">
-                <div class="metric-row">
-                  <span>Similaridade estimada:</span>
-                  <strong>{{ recognitionResult()?.confidence }}%</strong>
+          <div class="camera-body">
+            <div class="viewport">
+              <video
+                #videoElement
+                autoplay
+                playsinline
+                muted
+                [class.hidden]="!cameraActive() || previewUrl()"
+              ></video>
+              @if (previewUrl()) {
+                <img [src]="previewUrl()" alt="Imagem selecionada para identificação" />
+              }
+              @if (!cameraActive() && !previewUrl()) {
+                <div class="placeholder">
+                  <app-icon name="camera" />
+                  <h2>Posicione seu rosto</h2>
+                  <p>Ative a câmera ou envie uma imagem.</p>
+                  <button class="secondary" (click)="startCamera()" [disabled]="cameraStarting()">
+                    {{ cameraStarting() ? 'Aguardando câmera…' : 'Ativar câmera' }}
+                  </button>
+                  @if (cameraStarting()) {
+                    <p role="status">Autorize o acesso à câmera no navegador.</p>
+                  }
                 </div>
-                <div class="progress-bar">
-                  <div
-                    class="progress-fill"
-                    [style.width.%]="recognitionResult()?.confidence || 0">
+              }
+              @if (cameraActive() && !previewUrl()) {
+                <div class="face-guide" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+              }
+              <canvas #canvasElement hidden></canvas>
+            </div>
+            @if (cameraError()) {
+              <p class="inline-error" role="alert">{{ cameraError() }}</p>
+            }
+            <div class="camera-source">
+              <app-icon name="camera" /><select
+                aria-label="Selecionar câmera"
+                [ngModel]="selectedCamera"
+                (ngModelChange)="changeCamera($event)"
+              >
+                @if (!cameras().length) {
+                  <option value="">Câmera padrão</option>
+                }
+                @for (camera of cameras(); track camera.deviceId) {
+                  <option [value]="camera.deviceId">
+                    {{ camera.label || 'Câmera ' + ($index + 1) }}
+                  </option>
+                }
+              </select>
+            </div>
+            <div class="camera-controls">
+              <label class="upload-button"
+                ><app-icon name="image" />Enviar imagem<input
+                  type="file"
+                  accept="image/*"
+                  (change)="onFileSelected($event)"
+              /></label>
+              @if (activeTab() === 'recognize') {
+                <button
+                  class="primary"
+                  [disabled]="(!cameraActive() && !capturedImageBlob()) || isRecognizing()"
+                  (click)="recognizeImage()"
+                >
+                  <app-icon />{{ isRecognizing() ? 'Identificando…' : 'Reconhecer pessoa' }}
+                </button>
+              } @else {
+                <button class="primary" [disabled]="!cameraActive()" (click)="captureSnapshot()">
+                  <app-icon name="camera" />Capturar foto
+                </button>
+              }
+            </div>
+          </div>
+        </section>
+        <section class="action-card">
+          <div class="panel-heading">
+            <h2>
+              <app-icon name="users" /><span
+                ><em>02.</em>
+                {{ activeTab() === 'register' ? 'Novo cadastro' : 'Identificação' }}</span
+              >
+            </h2>
+          </div>
+          <div class="action-content">
+            @if (activeTab() === 'register') {
+              <form (ngSubmit)="executeRegister()">
+                <h2>Cadastrar pessoa</h2>
+                <p>Informe o nome e selecione uma imagem com o rosto visível.</p>
+                <label for="person-name">Nome da pessoa</label
+                ><input
+                  id="person-name"
+                  name="personName"
+                  autocomplete="name"
+                  placeholder="Nome completo"
+                  [(ngModel)]="registerName"
+                  maxlength="200"
+                /><button class="primary full" type="submit" [disabled]="isRegistering()">
+                  <app-icon />{{ isRegistering() ? 'Cadastrando…' : 'Cadastrar facial' }}
+                </button>
+              </form>
+            } @else {
+              @if (recognitionResult(); as result) {
+                <div class="result" aria-live="polite">
+                  <div class="result-summary">
+                    @if (previewUrl()) {
+                      <img
+                        class="result-photo"
+                        [src]="previewUrl()"
+                        alt="Imagem utilizada nesta identificação"
+                      />
+                    }
+                    <div class="result-details">
+                      <span class="result-badge" [class.unmatched]="!result.matched">{{
+                        result.matched ? 'Identificação encontrada' : 'Sem correspondência'
+                      }}</span>
+                      <h2>{{ result.matched ? result.name : 'Pessoa não encontrada' }}</h2>
+                      @if (result.matched) {
+                        <p class="person-id">ID: {{ result.id }}</p>
+                      }
+                      @if (result.matched && result.confidence !== null) {
+                        <div class="similarity">
+                          <span>Similaridade</span
+                          ><strong
+                            >{{ confidencePercent(result.confidence) | number: '1.1-1' }}%</strong
+                          >
+                        </div>
+                        <progress max="100" [value]="confidencePercent(result.confidence)">
+                          Similaridade
+                        </progress>
+                      }
+                    </div>
+                  </div>
+                  <div class="result-meta">
+                    <app-icon name="calendar" /><span>Último reconhecimento</span
+                    ><time>{{ recognizedAt() | date: 'dd/MM/yyyy HH:mm' }}</time>
                   </div>
                 </div>
-                <div class="metric-row metric-sub">
-                  <span>Distância de cosseno:</span>
-                  <code>{{ recognitionResult()?.distance }}</code>
+              } @else {
+                <div class="result-empty" role="status">
+                  <app-icon />
+                  <h2>{{ isRecognizing() ? 'Identificando pessoa…' : 'Aguardando imagem' }}</h2>
+                  <p>
+                    {{
+                      isRecognizing()
+                        ? 'Aguarde o resultado da identificação.'
+                        : 'Capture ou envie uma imagem para iniciar o reconhecimento.'
+                    }}
+                  </p>
                 </div>
-              </div>
-
-              <p class="match-message">{{ recognitionResult()?.message }}</p>
-            </div>
-
-            <!-- CASO 2: NÃO RECONHECIDO -->
-            <div *ngIf="!recognitionResult()?.matched" class="match-unknown">
-              <div class="match-badge badge-warning">❓ DESCONHECIDO</div>
-              <h3>Rosto Não Identificado</h3>
-              <p class="match-message">
-                Nenhum cadastro existente atingiu o limiar de similaridade.
-              </p>
-              <div *ngIf="recognitionResult()?.distance !== null" class="metric-row metric-sub">
-                <span>Melhor distância encontrada:</span>
-                <code>{{ recognitionResult()?.distance }}</code>
-              </div>
-              <button class="btn btn-outline btn-sm" (click)="setTab('register')">
-                👉 Cadastrar esta pessoa agora
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <!-- SEÇÃO: CADASTRAR -->
-        <div *ngIf="activeTab() === 'register'">
-          <div class="card-header">
-            <h3>Novo Cadastro Facial</h3>
-          </div>
-          <p class="description">
-            Insira o nome da pessoa e vincule a imagem capturada. O modelo FaceNet512 irá gerar o
-            vetor de 512 dimensões e gravá-lo no banco.
-          </p>
-
-          <div class="form-group">
-            <label for="personName">Nome completo da pessoa:</label>
-            <input
-              id="personName"
-              type="text"
-              class="form-control"
-              [(ngModel)]="registerName"
-              placeholder="Ex: Gabriel Costa"
-              (keyup.enter)="executeRegister()" />
-          </div>
-
-          <div class="action-buttons">
+              }
+              @if (recognitionError()) {
+                <p class="inline-error" role="alert">{{ recognitionError() }}</p>
+              }
+            }
             <button
-              class="btn btn-success btn-block btn-lg"
-              [disabled]="!capturedImageBlob() || !registerName.trim() || isRegistering()"
-              (click)="executeRegister()">
-              <span *ngIf="!isRegistering()">💾 Salvar no Banco de Dados</span>
-              <span *ngIf="isRegistering()" class="spinner-inline">Calculando embedding e salvando...</span>
+              class="secondary new-analysis"
+              (click)="retakePhoto()"
+              [disabled]="isRecognizing() || isRegistering()"
+            >
+              <app-icon name="refresh" />{{
+                activeTab() === 'register' ? 'Nova captura' : 'Nova análise'
+              }}
             </button>
           </div>
-
-          <div *ngIf="!capturedImageBlob()" class="instruction-box">
-            💡 Dica: tire uma foto ou selecione uma imagem para poder cadastrar.
-          </div>
-
-          <!-- MENSAGEM DE ERRO -->
-          <div *ngIf="registerError()" class="alert alert-danger">
-            <strong>Erro:</strong> {{ registerError() }}
-          </div>
-
-          <!-- SUCESSO DE CADASTRO -->
-          <div *ngIf="registerSuccess()" class="alert alert-success">
-            <h4>🎉 Rosto cadastrado com sucesso!</h4>
-            <p><strong>Nome:</strong> {{ registerSuccess()?.name }}</p>
-            <p><strong>ID:</strong> <code>{{ registerSuccess()?.id }}</code></p>
-            <p class="text-sm text-dim">
-              O vetor vetorial foi indexado no pgvector. Agora esta pessoa já pode ser reconhecida!
-            </p>
-            <div class="mt-3">
-              <button class="btn btn-primary btn-sm" (click)="setTab('recognize')">
-                Testar Reconhecimento
-              </button>
-            </div>
-          </div>
+        </section>
+      </div>
+    } @else {
+      <section class="people-card">
+        <div class="panel-heading">
+          <b>Diretório de pessoas</b
+          ><button class="secondary" (click)="setTab('register')">Cadastrar facial</button>
         </div>
+        @if (isLoadingFaces()) {
+          <p class="empty" role="status">Carregando cadastros…</p>
+        } @else if (listError()) {
+          <div class="empty" role="alert">
+            <p>{{ listError() }}</p>
+            <button class="secondary" (click)="loadFaces()">Tentar novamente</button>
+          </div>
+        } @else if (!faces().length) {
+          <div class="empty">
+            <app-icon name="users" />
+            <h2>Nenhuma pessoa cadastrada</h2>
+            <p>Adicione o primeiro rosto para começar.</p>
+          </div>
+        } @else {
+          <ul class="people-list">
+            @for (face of faces(); track face.id) {
+              <li>
+                <span class="avatar">{{ face.name.charAt(0).toUpperCase() }}</span>
+                <div>
+                  <h3>{{ face.name }}</h3>
+                  <p>Cadastrado em {{ face.created_at | date: 'dd/MM/yyyy' }}</p>
+                </div>
+                <button
+                  class="delete-button"
+                  (click)="deleteFace(face)"
+                  [attr.aria-label]="'Excluir cadastro de ' + face.name"
+                >
+                  Excluir
+                </button>
+              </li>
+            }
+          </ul>
+        }
+        @if (deleteError()) {
+          <p class="inline-error" role="alert">{{ deleteError() }}</p>
+        }
       </section>
-    </div>
-
-    <!-- VIEW 3: GERENCIAR PESSOAS CADASTRADAS -->
-    <div *ngIf="activeTab() === 'manage'" class="manage-view">
-      <section class="card full-card">
-        <div class="card-header flex-between">
-          <div>
-            <h3>Pessoas Cadastradas no PostgreSQL</h3>
-            <p class="description">
-              Lista de faces persistidas no banco com embeddings vetoriais de 512 dimensões.
-            </p>
-          </div>
-          <button class="btn btn-secondary btn-sm" (click)="loadFaces()" [disabled]="isLoadingFaces()">
-            🔄 Atualizar Lista
-          </button>
-        </div>
-
-        <div *ngIf="deleteError()" class="alert alert-danger">
-          {{ deleteError() }}
-        </div>
-
-        <div *ngIf="isLoadingFaces()" class="loading-state">
-          <div class="spinner"></div>
-          <p>Carregando registros do banco...</p>
-        </div>
-
-        <div *ngIf="!isLoadingFaces() && faces().length === 0" class="empty-state">
-          <div class="empty-icon">👥</div>
-          <h4>Nenhum rosto cadastrado ainda</h4>
-          <p>Realize seu primeiro cadastro na aba "Cadastrar Rosto".</p>
-          <button class="btn btn-primary" (click)="setTab('register')">
-            Cadastrar Rosto
-          </button>
-        </div>
-
-        <div *ngIf="!isLoadingFaces() && faces().length > 0" class="faces-grid">
-          <div *ngFor="let face of faces()" class="face-card">
-            <div class="face-avatar">
-              {{ face.name.charAt(0).toUpperCase() }}
-            </div>
-            <div class="face-info">
-              <h4 class="face-name">{{ face.name }}</h4>
-              <span class="face-meta">Cadastrado em: {{ face.created_at | date:'dd/MM/yyyy HH:mm' }}</span>
-              <span class="face-id" title="ID único do banco">{{ face.id }}</span>
-            </div>
-            <button
-              class="btn-delete"
-              title="Excluir cadastro"
-              (click)="deleteFace(face)">
-              🗑️
-            </button>
-          </div>
-        </div>
-      </section>
-    </div>
+    }
+    <footer>© Vetra.AI 2026 - Todos os direitos reservados</footer>
   </main>
+</div>
+<div class="toast-region" aria-live="polite" aria-atomic="true">
+  @if (notification(); as message) {
+    <div
+      class="toast"
+      [class.error]="message.type === 'error'"
+      [attr.role]="message.type === 'error' ? 'alert' : 'status'"
+    >
+      <span class="toast-mark">{{ message.type === 'success' ? '✓' : '!' }}</span>
+      <div>
+        <strong>{{
+          message.type === 'success' ? 'Cadastro concluído' : 'Não foi possível cadastrar'
+        }}</strong>
+        <p>{{ message.text }}</p>
+      </div>
+      <button (click)="notification.set(null)" aria-label="Fechar mensagem">×</button>
+    </div>
+  }
 </div>
