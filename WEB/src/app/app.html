@@ -140,6 +140,7 @@
             <div class="viewport">
               <video
                 #videoElement
+                tabindex="-1"
                 autoplay
                 playsinline
                 muted
@@ -164,6 +165,14 @@
               @if (cameraActive() && !previewUrl()) {
                 <div class="face-guide" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
               }
+              <button
+                class="zoom-camera"
+                aria-label="Ampliar câmera"
+                title="Ampliar câmera"
+                (click)="openCameraModal()"
+              >
+                <app-icon name="expand" />
+              </button>
               <canvas #canvasElement hidden></canvas>
             </div>
             @if (cameraError()) {
@@ -347,6 +356,88 @@
     <footer>© Vetra.AI 2026 - Todos os direitos reservados</footer>
   </main>
 </div>
+@if (cameraModalOpen() || cameraModalClosing()) {
+  <div
+    class="camera-modal-backdrop"
+    [class.closing]="cameraModalClosing()"
+    (click)="closeCameraModal()"
+    (keydown.escape)="closeCameraModal()"
+  >
+    <section
+      class="camera-modal"
+      [class.closing]="cameraModalClosing()"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="camera-modal-title"
+      (click)="$event.stopPropagation()"
+    >
+      <header class="camera-modal-header">
+        <h2 id="camera-modal-title">
+          {{ activeTab() === 'register' ? 'Cadastrar facial' : 'Reconhecimento facial' }}
+        </h2>
+        <button
+          class="camera-modal-close"
+          aria-label="Fechar câmera ampliada"
+          (click)="closeCameraModal()"
+        >
+          <app-icon name="close" />
+        </button>
+      </header>
+      <div class="camera-modal-view">
+        <video
+          #modalVideo
+          autoplay
+          playsinline
+          muted
+          [class.hidden]="!cameraActive() || previewUrl()"
+        ></video>
+        @if (previewUrl()) {
+          <img [src]="previewUrl()" alt="Imagem selecionada para identificação" />
+        }
+        @if (cameraActive() && !previewUrl()) {
+          <div class="face-guide" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+        }
+        @if (!cameraActive() && !previewUrl()) {
+          <div class="modal-camera-status" role="status">
+            {{
+              cameraError() ||
+                (cameraStarting() ? 'Aguardando câmera…' : 'Ative a câmera para iniciar')
+            }}
+          </div>
+        }
+      </div>
+      @if (cameraError()) {
+        <p class="inline-error" role="alert">{{ cameraError() }}</p>
+      }
+      <footer class="camera-modal-controls">
+        @if (!cameraActive() && !previewUrl()) {
+          <button class="secondary" (click)="activateCameraFromModal()" [disabled]="cameraStarting()">
+            {{ cameraStarting() ? 'Aguardando câmera…' : 'Ativar câmera' }}
+          </button>
+        }
+        <label class="upload-button"
+          ><app-icon name="image" />Enviar imagem<input
+            type="file"
+            accept="image/*"
+            (change)="onModalFileSelected($event)"
+        /></label>
+        @if (activeTab() === 'recognize') {
+          <button
+            class="primary"
+            [disabled]="(!cameraActive() && !capturedImageBlob()) || isRecognizing()"
+            (click)="recognizeFromModal()"
+          >
+            <app-icon />{{ isRecognizing() ? 'Identificando…' : 'Reconhecer pessoa' }}
+          </button>
+        } @else {
+          <button class="primary" [disabled]="!cameraActive()" (click)="captureFromModal()">
+            <app-icon name="camera" />Capturar foto
+          </button>
+        }
+      </footer>
+    </section>
+  </div>
+}
 <div class="toast-region" aria-live="polite" aria-atomic="true">
   @if (notification(); as message) {
     <div

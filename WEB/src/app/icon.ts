@@ -19,6 +19,9 @@ import { Component, input } from '@angular/core';
       @case ('close') {
         <path d="m6 6 12 12M6 18 18 6" />
       }
+      @case ('expand') {
+        <path d="M15 3h6v6M14 10l7-7M9 21H3v-6m7-1-7 7" />
+      }
       @case ('camera') {
         <path
           d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3z"

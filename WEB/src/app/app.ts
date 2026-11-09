@@ -16,7 +16,7 @@ import { FaceResponse, RecognizeFaceResponse, RegisterFaceResponse } from './mod
 
 @Component({
   selector: 'app-root',
-  host: { '(document:keydown.escape)': 'closeMobileMenu()', '(window:resize)': 'onWindowResize()' },
+  host: { '(document:keydown.escape)': 'onEscape()', '(window:resize)': 'onWindowResize()' },
   standalone: true,
   imports: [CommonModule, FormsModule, Icon],
   templateUrl: './app.html',
@@ -28,9 +28,71 @@ export class App implements OnInit, OnDestroy {
   private readonly faceService = inject(FaceService);
 
   @ViewChild('videoElement') videoElement?: ElementRef<HTMLVideoElement>;
+  @ViewChild('modalVideo') modalVideo?: ElementRef<HTMLVideoElement>;
   @ViewChild('canvasElement') canvasElement?: ElementRef<HTMLCanvasElement>;
 
   readonly activeTab = signal<'recognize' | 'register' | 'manage'>('recognize');
+  readonly cameraModalOpen = signal(false);
+  readonly cameraModalClosing = signal(false);
+  private cameraModalCloseTimer: ReturnType<typeof setTimeout> | null = null;
+
+  openCameraModal(): void {
+    if (this.cameraModalCloseTimer) clearTimeout(this.cameraModalCloseTimer);
+    this.cameraModalCloseTimer = null;
+    this.cameraModalClosing.set(false);
+    this.cameraModalOpen.set(true);
+    this.changeDetector.detectChanges();
+    if (this.mediaStream && this.modalVideo) {
+      this.modalVideo.nativeElement.srcObject = this.mediaStream;
+      this.modalVideo.nativeElement.muted = true;
+      void this.modalVideo.nativeElement.play().catch(() => {});
+    } else if (!this.cameraActive()) {
+      void this.startCamera();
+    }
+    document.querySelector<HTMLButtonElement>('.camera-modal-close')?.focus();
+  }
+
+  closeCameraModal(): void {
+    if (!this.cameraModalOpen() || this.cameraModalClosing()) return;
+    this.cameraModalClosing.set(true);
+    this.cameraModalOpen.set(false);
+    this.changeDetector.detectChanges();
+    this.cameraModalCloseTimer = setTimeout(() => {
+      this.cameraModalClosing.set(false);
+      this.cameraModalCloseTimer = null;
+      this.changeDetector.detectChanges();
+      this.videoElement?.nativeElement.focus();
+    }, 220);
+  }
+
+  async activateCameraFromModal(): Promise<void> {
+    const starting = this.startCamera();
+    this.closeCameraModal();
+    await starting;
+  }
+
+  async recognizeFromModal(): Promise<void> {
+    const recognition = this.recognizeImage();
+    this.closeCameraModal();
+    await recognition;
+  }
+
+  async captureFromModal(): Promise<void> {
+    const capture = this.captureSnapshot();
+    this.closeCameraModal();
+    await capture;
+  }
+
+  onModalFileSelected(event: Event): void {
+    this.onFileSelected(event);
+    const input = event.target as HTMLInputElement;
+    if (input.files?.length) this.closeCameraModal();
+  }
+
+  onEscape(): void {
+    if (this.cameraModalOpen()) this.closeCameraModal();
+    this.closeMobileMenu();
+  }
 
   // Controle da Câmera e Captura
   readonly cameraActive = signal<boolean>(false);
@@ -135,6 +197,7 @@ export class App implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.destroyed = true;
+    if (this.cameraModalCloseTimer) clearTimeout(this.cameraModalCloseTimer);
     this.stopCamera();
     this.revokePreviewUrl();
   }
@@ -216,6 +279,11 @@ export class App implements OnInit, OnDestroy {
       video.muted = true;
       video.srcObject = stream;
       await video.play();
+      if (this.cameraModalOpen() && this.modalVideo) {
+        this.modalVideo.nativeElement.srcObject = stream;
+        this.modalVideo.nativeElement.muted = true;
+        await this.modalVideo.nativeElement.play();
+      }
       this.selectedCamera = stream.getVideoTracks()[0]?.getSettings().deviceId || '';
       // Listing devices must not interrupt an already running camera.
       void navigator.mediaDevices
@@ -258,12 +326,16 @@ export class App implements OnInit, OnDestroy {
     if (this.videoElement && this.videoElement.nativeElement) {
       this.videoElement.nativeElement.srcObject = null;
     }
+    if (this.modalVideo) this.modalVideo.nativeElement.srcObject = null;
     this.cameraActive.set(false);
   }
 
   async captureSnapshot(): Promise<void> {
-    if (!this.videoElement || !this.videoElement.nativeElement) return;
-    const video = this.videoElement.nativeElement;
+    const video =
+      this.cameraModalOpen() && this.modalVideo
+        ? this.modalVideo.nativeElement
+        : this.videoElement?.nativeElement;
+    if (!video) return;
 
     const canvas = this.canvasElement?.nativeElement || document.createElement('canvas');
     canvas.width = video.videoWidth || 640;
