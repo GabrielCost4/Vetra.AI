@@ -42,20 +42,20 @@
     </div>
     <nav aria-label="Seções" class="tabs">
       <button
-        [class.active]="activeTab() === 'recognize'"
-        (click)="setTab('recognize')"
-        [attr.aria-current]="activeTab() === 'recognize' ? 'page' : null"
-        title="Reconhecimento"
-      >
-        <app-icon name="camera" /><span>Reconhecimento</span>
-      </button>
-      <button
         [class.active]="activeTab() === 'register'"
         (click)="setTab('register')"
         [attr.aria-current]="activeTab() === 'register' ? 'page' : null"
         title="Cadastro facial"
       >
         <app-icon /><span>Cadastro facial</span>
+      </button>
+      <button
+        [class.active]="activeTab() === 'recognize'"
+        (click)="setTab('recognize')"
+        [attr.aria-current]="activeTab() === 'recognize' ? 'page' : null"
+        title="Reconhecimento"
+      >
+        <app-icon name="camera" /><span>Reconhecimento</span>
       </button>
       <button
         [class.active]="activeTab() === 'manage'"

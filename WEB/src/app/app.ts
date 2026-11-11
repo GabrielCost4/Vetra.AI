@@ -31,7 +31,7 @@ export class App implements OnInit, OnDestroy {
   @ViewChild('modalVideo') modalVideo?: ElementRef<HTMLVideoElement>;
   @ViewChild('canvasElement') canvasElement?: ElementRef<HTMLCanvasElement>;
 
-  readonly activeTab = signal<'recognize' | 'register' | 'manage'>('recognize');
+  readonly activeTab = signal<'recognize' | 'register' | 'manage'>('register');
   readonly cameraModalOpen = signal(false);
   readonly cameraModalClosing = signal(false);
   private cameraModalCloseTimer: ReturnType<typeof setTimeout> | null = null;
@@ -158,6 +158,7 @@ export class App implements OnInit, OnDestroy {
 
   readonly theme = signal<'dark' | 'light'>('dark');
   readonly notification = signal<{ type: 'success' | 'error'; text: string } | null>(null);
+  private notificationTimer: ReturnType<typeof setTimeout> | null = null;
   readonly listError = signal<string | null>(null);
   private destroyed = false;
   private cameraRequest = 0;
@@ -178,6 +179,8 @@ export class App implements OnInit, OnDestroy {
   }
 
   private notifyError(text: string): void {
+    if (this.notificationTimer) clearTimeout(this.notificationTimer);
+    this.notificationTimer = null;
     this.registerError.set(text);
     this.notification.set({ type: 'error', text });
   }
@@ -198,6 +201,7 @@ export class App implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.destroyed = true;
     if (this.cameraModalCloseTimer) clearTimeout(this.cameraModalCloseTimer);
+    if (this.notificationTimer) clearTimeout(this.notificationTimer);
     this.stopCamera();
     this.revokePreviewUrl();
   }
@@ -452,6 +456,8 @@ export class App implements OnInit, OnDestroy {
 
   executeRegister(): void {
     if (this.isRegistering()) return;
+    if (this.notificationTimer) clearTimeout(this.notificationTimer);
+    this.notificationTimer = null;
     this.notification.set(null);
     const name = this.registerName.trim();
     const blob = this.capturedImageBlob();
@@ -474,6 +480,10 @@ export class App implements OnInit, OnDestroy {
       next: (res) => {
         this.registerSuccess.set(res);
         this.notification.set({ type: 'success', text: `${res.name} foi cadastrado com sucesso.` });
+        this.notificationTimer = setTimeout(() => {
+          this.notification.set(null);
+          this.notificationTimer = null;
+        }, 3000);
         this.isRegistering.set(false);
         this.registerName = '';
         this.loadFaces();
