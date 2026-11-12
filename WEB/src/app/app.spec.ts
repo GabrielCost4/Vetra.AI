@@ -34,9 +34,7 @@ describe('Vetra workspace', () => {
     const fixture = TestBed.createComponent(App);
     fixture.detectChanges();
     await fixture.whenStable();
-    expect(fixture.nativeElement.querySelector('h1').textContent).toContain(
-      'Reconhecimento facial',
-    );
+    expect(fixture.nativeElement.querySelector('h1').textContent).toContain('Cadastro facial');
     expect(document.documentElement.dataset['theme']).toBe('light');
     fixture.componentInstance.toggleTheme();
     expect(localStorage.getItem('vetra-theme')).toBe('dark');
@@ -86,6 +84,29 @@ describe('Vetra workspace', () => {
       'Rosto não detectado.',
     );
     expect(app.isRegistering()).toBe(false);
+    fixture.destroy();
+  });
+
+  it('asks for confirmation before deleting and removes the card', () => {
+    const fixture = TestBed.createComponent(App);
+    const app = fixture.componentInstance;
+    app.setTab('manage');
+    fixture.detectChanges();
+
+    const trigger = fixture.nativeElement.querySelector('.delete-button') as HTMLButtonElement;
+    trigger.click();
+    fixture.detectChanges();
+
+    expect(service.deleteFace).not.toHaveBeenCalled();
+    expect(fixture.nativeElement.querySelector('.confirm-dialog')).toBeTruthy();
+
+    const confirmButton = fixture.nativeElement.querySelector('.danger') as HTMLButtonElement;
+    confirmButton.click();
+    fixture.detectChanges();
+
+    expect(service.deleteFace).toHaveBeenCalledWith('1');
+    expect(app.faces()).toEqual([]);
+    expect(fixture.nativeElement.querySelector('.confirm-dialog')).toBeFalsy();
     fixture.destroy();
   });
 });

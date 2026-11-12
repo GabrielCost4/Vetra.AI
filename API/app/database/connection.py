@@ -1,22 +1,11 @@
-import os
-from pathlib import Path
 from typing import Generator
-from dotenv import load_dotenv
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
 
-# Carrega variáveis do arquivo infra/.env ou .env se existirem
-env_paths = [
-    Path(__file__).resolve().parent.parent.parent / "infra" / ".env",
-    Path(__file__).resolve().parent.parent.parent / ".env",
-]
-for env_path in env_paths:
-    if env_path.exists():
-        load_dotenv(dotenv_path=env_path)
-        break
+from app.config import settings
 
-DATABASE_URL = os.getenv("DATABASE_URL")
-if not DATABASE_URL or not DATABASE_URL.strip():
+DATABASE_URL = settings.database_url
+if not DATABASE_URL:
     raise RuntimeError(
         "Configure DATABASE_URL no ambiente ou no arquivo infra/.env antes de iniciar a API."
     )

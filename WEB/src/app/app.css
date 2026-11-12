@@ -208,6 +208,7 @@ h1 {
 }
 .primary,
 .secondary,
+.danger,
 .upload-button {
   min-height: 48px;
   display: flex;
@@ -237,6 +238,14 @@ h1 {
 .secondary:hover,
 .upload-button:hover {
   background: var(--raised);
+}
+.danger {
+  background: var(--coral);
+  color: var(--bg);
+  border: 1px solid var(--coral);
+}
+.danger:hover:enabled {
+  filter: brightness(0.95);
 }
 .upload-button {
   position: relative;
@@ -462,6 +471,53 @@ progress::-moz-progress-bar {
   border-radius: 6px;
   background: transparent;
   color: var(--coral);
+}
+.confirm-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 210;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: #020504df;
+  backdrop-filter: blur(8px);
+}
+.confirm-dialog {
+  width: min(100%, 440px);
+  padding: 26px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--panel);
+  box-shadow: 0 24px 90px #0008;
+}
+.confirm-dialog h2 {
+  font-size: 20px;
+  margin-bottom: 12px;
+}
+.confirm-dialog p {
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.6;
+}
+.confirm-dialog strong {
+  color: var(--text);
+}
+.confirm-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 26px;
+}
+.confirm-actions button {
+  min-width: 120px;
+}
+@media (max-width: 480px) {
+  .confirm-actions {
+    flex-direction: column-reverse;
+  }
+  .confirm-actions button {
+    width: 100%;
+  }
 }
 @media (min-width: 1600px) {
   .shell {

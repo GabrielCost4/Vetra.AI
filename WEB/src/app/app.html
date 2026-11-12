@@ -2,6 +2,7 @@
   class="shell"
   [class.sidebar-collapsed]="sidebarCollapsed()"
   [class.mobile-menu-open]="mobileMenuOpen()"
+  [attr.inert]="pendingDeletion() ? '' : null"
 >
   @if (mobileMenuOpen()) {
     <button class="sidebar-backdrop" aria-label="Fechar menu" (click)="closeMobileMenu()"></button>
@@ -238,7 +239,7 @@
                   autocomplete="name"
                   placeholder="Nome completo"
                   [(ngModel)]="registerName"
-                  maxlength="200"
+                  maxlength="150"
                 /><button class="primary full" type="submit" [disabled]="isRegistering()">
                   <app-icon />{{ isRegistering() ? 'Cadastrando…' : 'Cadastrar facial' }}
                 </button>
@@ -339,7 +340,7 @@
                 </div>
                 <button
                   class="delete-button"
-                  (click)="deleteFace(face)"
+                  (click)="requestDelete(face, $event)"
                   [attr.aria-label]="'Excluir cadastro de ' + face.name"
                 >
                   Excluir
@@ -411,7 +412,11 @@
       }
       <footer class="camera-modal-controls">
         @if (!cameraActive() && !previewUrl()) {
-          <button class="secondary" (click)="activateCameraFromModal()" [disabled]="cameraStarting()">
+          <button
+            class="secondary"
+            (click)="activateCameraFromModal()"
+            [disabled]="cameraStarting()"
+          >
             {{ cameraStarting() ? 'Aguardando câmera…' : 'Ativar câmera' }}
           </button>
         }
@@ -435,6 +440,42 @@
           </button>
         }
       </footer>
+    </section>
+  </div>
+}
+@if (pendingDeletion(); as face) {
+  <div
+    class="confirm-backdrop"
+    (click)="cancelDelete()"
+    (keydown.escape)="cancelDelete()"
+    (keydown)="onDeleteDialogKeydown($event)"
+  >
+    <section
+      class="confirm-dialog"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="delete-dialog-title"
+      aria-describedby="delete-dialog-description"
+      (click)="$event.stopPropagation()"
+    >
+      <h2 id="delete-dialog-title">Excluir cadastro</h2>
+      <p id="delete-dialog-description">
+        Remover o cadastro de <strong>{{ face.name }}</strong
+        >? Essa ação não pode ser desfeita.
+      </p>
+      <div class="confirm-actions">
+        <button
+          #deleteDialogCancel
+          class="secondary"
+          (click)="cancelDelete()"
+          [disabled]="isDeleting()"
+        >
+          Cancelar
+        </button>
+        <button class="danger" (click)="confirmDelete()" [disabled]="isDeleting()">
+          {{ isDeleting() ? 'Excluindo…' : 'Excluir' }}
+        </button>
+      </div>
     </section>
   </div>
 }

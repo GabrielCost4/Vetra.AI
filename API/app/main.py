@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.config import settings
 from app.routers.faces import router as faces_router
 
 app = FastAPI(
@@ -9,10 +10,10 @@ app = FastAPI(
     version="1.0.0",
 )
 
-# Habilitar CORS para permitir comunicação com o frontend Angular
+# Origens permitidas configuráveis por CORS_ORIGINS (separadas por vírgula)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://vetra-ai-olive.vercel.app"],
+    allow_origins=list(settings.cors_origins),
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

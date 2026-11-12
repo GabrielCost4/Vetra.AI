@@ -1,5 +1,5 @@
 from uuid import UUID
-from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, status
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile, status
 from sqlalchemy.orm import Session
 
 from app.database.connection import get_db
@@ -19,7 +19,7 @@ router = APIRouter(
     summary="Cadastrar um novo rosto",
 )
 async def register_face(
-    name: str = Form(...),
+    name: str = Form(..., min_length=1, max_length=150),
     image: UploadFile = File(...),
     db: Session = Depends(get_db),
 ):
@@ -46,8 +46,8 @@ async def recognize_face(
     summary="Listar rostos cadastrados",
 )
 def list_faces(
-    skip: int = 0,
-    limit: int = 100,
+    skip: int = Query(default=0, ge=0, description="Registros a ignorar."),
+    limit: int = Query(default=100, ge=1, le=200, description="Máximo de registros retornados."),
     db: Session = Depends(get_db),
 ):
     return facial_service.list_faces(db=db, skip=skip, limit=limit)

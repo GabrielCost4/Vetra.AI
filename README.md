@@ -82,6 +82,7 @@ flowchart LR
 | `API/app/repositories` | Consultas e persistência dos cadastros. |
 | `API/app/models` | Modelo relacional e coluna vetorial. |
 | `API/app/schemas` | Contratos Pydantic de resposta. |
+| `API/app/config.py` | Configuração de ambiente: banco, CORS e limites de upload. |
 | `API/app/database` | Conexão, configuração e sessões do banco. |
 | `API/alembic` | Migrações do esquema. |
 | `API/infra` | Docker Compose, exemplo de ambiente e inicialização do pgvector. |
@@ -131,7 +132,10 @@ POSTGRES_USER=vetra
 POSTGRES_PASSWORD=sua_senha_local
 POSTGRES_PORT=5432
 DATABASE_URL=postgresql+psycopg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@127.0.0.1:${POSTGRES_PORT}/${POSTGRES_DB}
+CORS_ORIGINS=http://localhost:4200,http://127.0.0.1:4200,https://vetra-ai-olive.vercel.app
 ```
+
+`CORS_ORIGINS` define as origens autorizadas, separadas por vírgula. Em produção, ajuste a lista para os domínios reais da interface. Os limites opcionais `MAX_UPLOAD_BYTES` (padrão de 5 MB) e `MAX_IMAGE_PIXELS` protegem a API contra uploads excessivos.
 
 Se a senha contiver caracteres reservados de URL, use a codificação correspondente na `DATABASE_URL`. Não versione o arquivo `.env`.
 
@@ -195,7 +199,7 @@ npm ci
 npm start
 ```
 
-Abra http://localhost:4200. O cliente usa `http://127.0.0.1:8000/api/faces`, configurado em [face.service.ts](WEB/src/app/services/face.service.ts). Se alterar a porta ou o endereço da API, ajuste esse arquivo.
+Abra http://localhost:4200. No modo de desenvolvimento, o cliente usa `http://127.0.0.1:8000/api`, definido em [environment.development.ts](WEB/src/environments/environment.development.ts). O build de produção usa a URL de [environment.ts](WEB/src/environments/environment.ts), substituída automaticamente pelo `angular.json`. Se alterar a porta ou o endereço da API, ajuste o arquivo do ambiente correspondente.
 
 Para acessar por outro dispositivo, configure um endereço de API acessível por ele. `127.0.0.1` sempre aponta para o próprio dispositivo que está acessando a aplicação. A captura de câmera exige HTTPS ou uma origem local considerada segura pelo navegador.
 
@@ -218,7 +222,7 @@ Os endpoints de imagem recebem `multipart/form-data`. Não envie o arquivo como 
 | `GET` | `/` | — | `200`, estado da API. |
 | `POST` | `/api/faces/register` | `name` e `image` | `201`, cadastro criado. |
 | `POST` | `/api/faces/recognize` | `image` | `200`, resultado da comparação. |
-| `GET` | `/api/faces` | `skip` e `limit` opcionais | `200`, lista de cadastros. |
+| `GET` | `/api/faces` | `skip` e `limit` opcionais (máximo 200) | `200`, lista de cadastros. |
 | `DELETE` | `/api/faces/{face_id}` | UUID na URL | `204`, sem corpo. |
 
 ### Exemplos com cURL
@@ -261,8 +265,9 @@ A busca usa distância de cosseno e considera correspondência quando a menor di
 
 | Código | Situação |
 | --- | --- |
-| `400` | Nome vazio, arquivo vazio ou imagem inválida. |
+| `400` | Nome vazio, arquivo vazio, imagem inválida ou resolução acima do limite. |
 | `404` | Cadastro não encontrado na exclusão. |
+| `413` | Imagem acima do limite de tamanho configurado. |
 | `415` | Tipo de arquivo diferente de imagem. |
 | `422` | Nenhum rosto, múltiplos rostos ou entrada inválida para o contrato da rota. |
 
@@ -293,7 +298,7 @@ O repositório contém testes da interface com Vitest. O build gera os arquivos 
 | Erro na instalação de TensorFlow | Confira a compatibilidade da versão do Python, sistema e dependências instaladas no ambiente virtual. |
 | Câmera bloqueada | Libere a permissão no navegador e no sistema e use HTTPS ou localhost. |
 | Câmera ocupada | Feche outros aplicativos que estejam usando o dispositivo e tente novamente. |
-| WEB não alcança a API | Confira a URL do cliente, a porta e se a API está em execução. |
+| WEB não alcança a API | Confira a URL do ambiente, a porta, se a API está em execução e se a origem está em `CORS_ORIGINS`. |
 | Imagem rejeitada | Use um arquivo válido com uma única pessoa e um rosto visível. |
 
 Para parar o banco sem remover seus dados:
@@ -304,7 +309,7 @@ docker compose --env-file API/infra/.env -f API/infra/compose.yaml down
 
 ## Estado atual e implantação
 
-A configuração atual é voltada à execução local. A API não implementa autenticação ou autorização e permite origens CORS de forma ampla. Antes de disponibilizá-la publicamente, configure controle de acesso, origens permitidas, limites de upload e de requisições, HTTPS e tratamento operacional de falhas.
+A configuração atual é voltada à execução local. A API não implementa autenticação ou autorização. As origens permitidas no CORS vêm de `CORS_ORIGINS` e os limites de upload são configuráveis, mas antes de disponibilizá-la publicamente ainda é necessário configurar controle de acesso, limites de requisições, HTTPS e tratamento operacional de falhas.
 
 Os embeddings também são dados biométricos. Defina consentimento, acesso, retenção e exclusão adequados ao uso da aplicação. O código atual não implementa detecção de vivacidade; uma imagem enviada pode ser usada para reconhecimento, portanto o fluxo não deve ser tratado como prova de presença física.
 
