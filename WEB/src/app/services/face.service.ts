@@ -11,7 +11,11 @@ export class FaceService {
   private readonly http = inject(HttpClient);
   private readonly apiUrl = `${environment.apiUrl}/faces`;
 
-  registerFace(name: string, imageBlob: Blob, filename = 'capture.jpg'): Observable<RegisterFaceResponse> {
+  registerFace(
+    name: string,
+    imageBlob: Blob,
+    filename = 'capture.jpg',
+  ): Observable<RegisterFaceResponse> {
     const formData = new FormData();
     formData.append('name', name);
     formData.append('image', imageBlob, filename);
