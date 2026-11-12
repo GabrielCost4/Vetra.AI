@@ -11,6 +11,7 @@ import {
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Icon } from './icon';
+import { apiErrorMessage } from './services/api-error';
 import { FaceService } from './services/face.service';
 import { FaceResponse, RecognizeFaceResponse, RegisterFaceResponse } from './models/face.model';
 
@@ -447,8 +448,9 @@ export class App implements OnInit, OnDestroy {
         this.isRecognizing.set(false);
       },
       error: (err) => {
-        const detail = err.error?.detail || 'Erro ao processar o reconhecimento facial.';
-        this.recognitionError.set(detail);
+        this.recognitionError.set(
+          apiErrorMessage(err, 'Erro ao processar o reconhecimento facial.'),
+        );
         this.isRecognizing.set(false);
       },
     });
@@ -489,8 +491,9 @@ export class App implements OnInit, OnDestroy {
         this.loadFaces();
       },
       error: (err) => {
-        const detail = err.error?.detail || 'Não foi possível cadastrar o rosto. Tente novamente.';
-        this.notifyError(detail);
+        this.notifyError(
+          apiErrorMessage(err, 'Não foi possível cadastrar o rosto. Tente novamente.'),
+        );
         this.isRegistering.set(false);
       },
     });
@@ -505,8 +508,8 @@ export class App implements OnInit, OnDestroy {
         this.faces.set(faces);
         this.isLoadingFaces.set(false);
       },
-      error: () => {
-        this.listError.set('Não foi possível carregar os cadastros.');
+      error: (err) => {
+        this.listError.set(apiErrorMessage(err, 'Não foi possível carregar os cadastros.'));
         this.isLoadingFaces.set(false);
       },
     });
@@ -522,8 +525,7 @@ export class App implements OnInit, OnDestroy {
         this.faces.update((list) => list.filter((f) => f.id !== face.id));
       },
       error: (err) => {
-        const detail = err.error?.detail || 'Não foi possível excluir o cadastro.';
-        this.deleteError.set(detail);
+        this.deleteError.set(apiErrorMessage(err, 'Não foi possível excluir o cadastro.'));
       },
     });
   }
