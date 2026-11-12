@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 from starlette.concurrency import run_in_threadpool
 from uuid import UUID
 
+from app.config import settings
 from app.models.models import Face
 from app.repositories.face_repository import face_repository
 from app.schemas.face import RecognizeFaceResponse, RegisterFaceResponse
@@ -28,6 +29,16 @@ class FacialService:
             raise HTTPException(status_code=400, detail="Imagem inválida.") from exc
         if image is None:
             raise HTTPException(status_code=400, detail="Imagem inválida.")
+
+        height, width = image.shape[:2]
+        if height * width > settings.max_image_pixels:
+            raise HTTPException(
+                status_code=400,
+                detail=(
+                    "Imagem com resolução muito alta. "
+                    f"Envie uma imagem com até {settings.max_image_pixels // 1_000_000} megapixels."
+                ),
+            )
 
         try:
             faces = DeepFace.extract_faces(
@@ -108,11 +119,23 @@ class FacialService:
                 detail="Envie um arquivo de imagem válido (JPEG, PNG, etc).",
             )
 
+        max_mb = settings.max_upload_bytes // (1024 * 1024)
+        if image.size is not None and image.size > settings.max_upload_bytes:
+            raise HTTPException(
+                status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+                detail=f"A imagem deve ter no máximo {max_mb} MB.",
+            )
+
         content = await image.read()
         if not content:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="O arquivo enviado está vazio.",
+            )
+        if len(content) > settings.max_upload_bytes:
+            raise HTTPException(
+                status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+                detail=f"A imagem deve ter no máximo {max_mb} MB.",
             )
 
         return content
