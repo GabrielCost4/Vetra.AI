@@ -1,3 +1,5 @@
+import logging
+
 import cv2
 import numpy as np
 from deepface import DeepFace
@@ -10,6 +12,8 @@ from app.models.models import Face
 from app.repositories.face_repository import face_repository
 from app.schemas.face import RecognizeFaceResponse, RegisterFaceResponse
 from app.services.embedding_service import EmbeddingService
+
+logger = logging.getLogger(__name__)
 
 
 class FacialService:
@@ -35,6 +39,7 @@ class FacialService:
                 normalize_face=False,
             )
         except ValueError as exc:
+            logger.exception("DeepFace falhou ao detectar rosto na imagem enviada.")
             raise HTTPException(status_code=422, detail="Nenhum rosto detectado na imagem.") from exc
         if len(faces) != 1:
             raise HTTPException(status_code=422, detail="Envie uma imagem com apenas um rosto.")
