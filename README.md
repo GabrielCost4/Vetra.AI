@@ -222,7 +222,7 @@ Os endpoints de imagem recebem `multipart/form-data`. Não envie o arquivo como 
 | `GET` | `/` | — | `200`, estado da API. |
 | `POST` | `/api/faces/register` | `name` e `image` | `201`, cadastro criado. |
 | `POST` | `/api/faces/recognize` | `image` | `200`, resultado da comparação. |
-| `GET` | `/api/faces` | `skip` e `limit` opcionais | `200`, lista de cadastros. |
+| `GET` | `/api/faces` | `skip` e `limit` opcionais (máximo 200) | `200`, lista de cadastros. |
 | `DELETE` | `/api/faces/{face_id}` | UUID na URL | `204`, sem corpo. |
 
 ### Exemplos com cURL
@@ -265,8 +265,9 @@ A busca usa distância de cosseno e considera correspondência quando a menor di
 
 | Código | Situação |
 | --- | --- |
-| `400` | Nome vazio, arquivo vazio ou imagem inválida. |
+| `400` | Nome vazio, arquivo vazio, imagem inválida ou resolução acima do limite. |
 | `404` | Cadastro não encontrado na exclusão. |
+| `413` | Imagem acima do limite de tamanho configurado. |
 | `415` | Tipo de arquivo diferente de imagem. |
 | `422` | Nenhum rosto, múltiplos rostos ou entrada inválida para o contrato da rota. |
 
