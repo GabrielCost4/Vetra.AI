@@ -35,7 +35,7 @@ describe('Vetra workspace', () => {
     fixture.detectChanges();
     await fixture.whenStable();
     expect(fixture.nativeElement.querySelector('h1').textContent).toContain(
-      'Reconhecimento facial',
+      'Cadastro facial',
     );
     expect(document.documentElement.dataset['theme']).toBe('light');
     fixture.componentInstance.toggleTheme();
