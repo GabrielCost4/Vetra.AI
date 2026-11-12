@@ -91,6 +91,10 @@ export class App implements OnInit, OnDestroy {
   }
 
   onEscape(): void {
+    if (this.pendingDeletion()) {
+      this.cancelDelete();
+      return;
+    }
     if (this.cameraModalOpen()) this.closeCameraModal();
     this.closeMobileMenu();
   }
@@ -116,10 +120,14 @@ export class App implements OnInit, OnDestroy {
   readonly faces = signal<FaceResponse[]>([]);
   readonly isLoadingFaces = signal<boolean>(false);
   readonly deleteError = signal<string | null>(null);
+  readonly pendingDeletion = signal<FaceResponse | null>(null);
+  readonly isDeleting = signal<boolean>(false);
+  private deleteTrigger: HTMLElement | null = null;
 
   readonly sidebarCollapsed = signal(false);
   readonly mobileMenuOpen = signal(false);
   @ViewChild('mobileMenuTrigger') mobileMenuTrigger?: ElementRef<HTMLButtonElement>;
+  @ViewChild('deleteDialogCancel') deleteDialogCancel?: ElementRef<HTMLButtonElement>;
 
   openMobileMenu(): void {
     this.mobileMenuOpen.set(true);
@@ -139,10 +147,20 @@ export class App implements OnInit, OnDestroy {
   }
 
   onSidebarKeydown(event: KeyboardEvent): void {
-    if (!this.mobileMenuOpen() || event.key !== 'Tab') return;
+    if (this.mobileMenuOpen()) this.trapFocus(event);
+  }
+
+  onDeleteDialogKeydown(event: KeyboardEvent): void {
+    this.trapFocus(event);
+  }
+
+  private trapFocus(event: KeyboardEvent): void {
+    if (event.key !== 'Tab') return;
     const buttons = Array.from(
-      (event.currentTarget as HTMLElement).querySelectorAll<HTMLElement>('button, a[href]'),
-    ).filter((el) => el.getClientRects().length);
+      (event.currentTarget as HTMLElement).querySelectorAll<HTMLElement>(
+        'button, a[href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
+      ),
+    ).filter((el) => el.getClientRects().length && !el.hasAttribute('disabled'));
     const first = buttons[0],
       last = buttons[buttons.length - 1];
     if (event.shiftKey && document.activeElement === first) {
@@ -515,18 +533,46 @@ export class App implements OnInit, OnDestroy {
     });
   }
 
-  deleteFace(face: FaceResponse): void {
-    if (!confirm(`Deseja realmente remover o cadastro de "${face.name}"?`)) {
-      return;
-    }
+  requestDelete(face: FaceResponse, event: Event): void {
+    this.deleteTrigger = event.currentTarget as HTMLElement;
+    this.deleteError.set(null);
+    this.pendingDeletion.set(face);
+    this.changeDetector.detectChanges();
+    this.deleteDialogCancel?.nativeElement.focus();
+  }
 
+  cancelDelete(): void {
+    if (this.isDeleting()) return;
+    this.closeDeleteDialog();
+  }
+
+  confirmDelete(): void {
+    const face = this.pendingDeletion();
+    if (!face || this.isDeleting()) return;
+
+    this.isDeleting.set(true);
+    this.deleteError.set(null);
     this.faceService.deleteFace(face.id).subscribe({
       next: () => {
         this.faces.update((list) => list.filter((f) => f.id !== face.id));
+        this.closeDeleteDialog();
       },
       error: (err) => {
         this.deleteError.set(apiErrorMessage(err, 'Não foi possível excluir o cadastro.'));
+        this.closeDeleteDialog();
       },
     });
+  }
+
+  private closeDeleteDialog(): void {
+    const trigger = this.deleteTrigger;
+    this.deleteTrigger = null;
+    this.pendingDeletion.set(null);
+    this.isDeleting.set(false);
+    if (trigger?.isConnected) {
+      trigger.focus();
+    } else {
+      document.querySelector<HTMLElement>('.people-card .secondary')?.focus();
+    }
   }
 }
