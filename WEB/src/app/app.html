@@ -238,7 +238,7 @@
                   autocomplete="name"
                   placeholder="Nome completo"
                   [(ngModel)]="registerName"
-                  maxlength="200"
+                  maxlength="150"
                 /><button class="primary full" type="submit" [disabled]="isRegistering()">
                   <app-icon />{{ isRegistering() ? 'Cadastrando…' : 'Cadastrar facial' }}
                 </button>
