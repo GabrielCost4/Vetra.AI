@@ -14,7 +14,7 @@
   <a href="#arquitetura">Arquitetura</a> ·
   <a href="#execução-local">Execução local</a> ·
   <a href="#api-http">API HTTP</a> ·
-  <a href="#contribuindo">Contribuir</a>
+  <a href="https://vetra-ai-olive.vercel.app/">Acessar Vetra.AI</a>
 </p>
 
 ## Sobre o projeto
@@ -25,6 +25,8 @@ O processamento acontece na API: a imagem é validada, o rosto é detectado e co
 
 ### Funcionalidades
 
+- Criação de conta e login com email e senha, autenticação JWT e hash de senha com bcrypt.
+- Cadastros, reconhecimento e exclusão restritos aos rostos da conta autenticada.
 - Cadastro facial com nome e imagem.
 - Reconhecimento a partir de arquivo ou captura da câmera.
 - Resultado com nome, identificador, distância e índice de similaridade retornados pela API.
@@ -70,31 +72,9 @@ flowchart LR
     Repositorio --> Banco[(PostgreSQL e pgvector)]
 ```
 
-| Caminho | Responsabilidade |
-| --- | --- |
-| `WEB/src/app/app.*` | Componente raiz. |
-| `WEB/src/app/layout` | Layout, menu, tema e navegação. |
-| `WEB/src/app/features/registration` | Tela de cadastro facial. |
-| `WEB/src/app/features/recognition` | Tela de reconhecimento facial. |
-| `WEB/src/app/features/people` | Listagem e exclusão dos cadastros deste navegador. |
-| `WEB/src/app/shared/ui/camera-capture` | Captura, upload, prévia e modal de câmera compartilhados. |
-| `WEB/src/app/shared/data-access/local-face-registry.ts` | Persistência dos IDs locais. |
-| `WEB/src/app/shared/data-access/face.service.ts` | Cliente HTTP utilizado pela interface. |
-| `WEB/src/app/shared/data-access/models/face.model.ts` | Contratos TypeScript das respostas. |
-| `WEB/src/styles.css` | Temas e estilos globais; estilos de cada componente ficam em seu CSS. |
-| `WEB/public/brand` | Logos para os temas claro e escuro. |
-| `API/app/routers` | Endpoints e integração com os serviços. |
-| `API/app/services` | Leitura da imagem, detecção do rosto, embeddings e operações faciais. |
-| `API/app/repositories` | Consultas e persistência dos cadastros. |
-| `API/app/models` | Modelo relacional e coluna vetorial. |
-| `API/app/schemas` | Contratos Pydantic de resposta. |
-| `API/app/database` | Conexão, configuração e sessões do banco. |
-| `API/alembic` | Migrações do esquema. |
-| `API/infra` | Docker Compose, exemplo de ambiente e inicialização do pgvector. |
-
 ### Dados armazenados
 
-Cada cadastro contém UUID, nome, embedding de 512 dimensões e data de criação. O modelo atual não possui coluna para armazenar a fotografia original. A imagem enviada é processada para gerar o vetor; a prévia da imagem na interface utiliza uma URL temporária do navegador.
+Cada cadastro contém UUID, `user_id` (FK para `users`), nome, embedding de 512 dimensões e data de criação. A tabela `users` contém UUID, nome, email único, hash bcrypt da senha e data de criação. Rostos anteriores à autenticação são preservados sem proprietário e ficam inacessíveis às contas. O modelo não armazena a fotografia original; a prévia usa uma URL temporária do navegador.
 
 ## Execução local
 
@@ -137,6 +117,13 @@ POSTGRES_USER=vetra
 POSTGRES_PASSWORD=sua_senha_local
 POSTGRES_PORT=5432
 DATABASE_URL=postgresql+psycopg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@127.0.0.1:${POSTGRES_PORT}/${POSTGRES_DB}
+JWT_SECRET_KEY=cole_aqui_uma_chave_aleatoria_de_pelo_menos_32_bytes
+```
+
+Gere o valor de `JWT_SECRET_KEY` e copie a saída para o arquivo antes de iniciar a API:
+
+```bash
+python -c "import secrets; print(secrets.token_urlsafe(48))"
 ```
 
 Se a senha contiver caracteres reservados de URL, use a codificação correspondente na `DATABASE_URL`. Não versione o arquivo `.env`.
@@ -182,6 +169,8 @@ python -m uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
 
 A API procura primeiro `API/infra/.env` e depois `API/.env`. Uma `DATABASE_URL` definida no ambiente tem precedência sobre os valores carregados pelo dotenv.
 
+A API valida `JWT_SECRET_KEY` durante a inicialização e não inicia se a chave tiver menos de 32 bytes. As migrations devem ser aplicadas antes de iniciar a nova versão.
+
 | Recurso | Endereço local |
 | --- | --- |
 | Saúde da API | http://127.0.0.1:8000/ |
@@ -201,13 +190,13 @@ npm ci
 npm start
 ```
 
-Abra http://localhost:4200. O cliente usa `http://127.0.0.1:8000/api/faces`, configurado em [face.service.ts](WEB/src/app/shared/data-access/face.service.ts). Se alterar a porta ou o endereço da API, ajuste esse arquivo.
+Abra http://localhost:4200. Em desenvolvimento, o cliente usa `http://127.0.0.1:8000/api`, definido em `WEB/src/environments/environment.ts`. O build de produção usa `environment.production.ts`, apontando para a API na Vercel.
 
 Para acessar por outro dispositivo, configure um endereço de API acessível por ele. `127.0.0.1` sempre aponta para o próprio dispositivo que está acessando a aplicação. A captura de câmera exige HTTPS ou uma origem local considerada segura pelo navegador.
 
 ## Como usar
 
-1. Abra **Cadastro facial**.
+1. Crie uma conta ou entre com email e senha. Depois abra **Cadastro facial**.
 2. Ative a câmera e capture uma foto, ou selecione **Enviar imagem**.
 3. Informe o nome e clique em **Cadastrar facial**.
 4. Abra **Reconhecimento**, capture ou envie outra imagem e clique em **Reconhecer pessoa**.
@@ -215,104 +204,33 @@ Para acessar por outro dispositivo, configure um endereço de API acessível por
 
 Use imagens nítidas, com boa iluminação e apenas um rosto. O reconhecimento pode variar com iluminação, enquadramento, oclusões e qualidade da imagem.
 
+O cadastro de conta exige nome com 2 a 150 caracteres, email válido e senha com 8 a 20 caracteres. O email é normalizado para letras minúsculas e deve ser único. A senha não pode conter apenas espaços.
+
 ## API HTTP
 
 Os endpoints de imagem recebem `multipart/form-data`. Não envie o arquivo como JSON ou Base64.
 
+As rotas `/api/faces` exigem `Authorization: Bearer <token>` e `X-User-Id: <user.id>`. O ID deve coincidir com o usuário do JWT. Listagem, reconhecimento e exclusão são restritos aos rostos dessa conta, com filtro no banco. Consulte [o contrato completo](API/AUTH.md).
+
 | Método | Rota | Entrada | Resposta de sucesso |
 | --- | --- | --- | --- |
 | `GET` | `/` | — | `200`, estado da API. |
+| `POST` | `/api/auth/register` | JSON: `name`, `email`, `password` | `201`, usuário e JWT. |
+| `POST` | `/api/auth/login` | JSON: `email`, `password` | `200`, usuário e JWT. |
+| `GET` | `/api/auth/me` | Bearer token | `200`, usuário autenticado. |
 | `POST` | `/api/faces/register` | `name` e `image` | `201`, cadastro criado. |
 | `POST` | `/api/faces/recognize` | `image` | `200`, resultado da comparação. |
 | `GET` | `/api/faces` | `skip` e `limit` opcionais | `200`, lista de cadastros. |
 | `DELETE` | `/api/faces/{face_id}` | UUID na URL | `204`, sem corpo. |
 
-### Exemplos com cURL
-
-Os exemplos abaixo usam sintaxe de shell Bash. No PowerShell, use `curl.exe` e coloque cada comando em uma única linha ou adapte a continuação de linha.
-
-```bash
-# Cadastrar
-curl -X POST http://127.0.0.1:8000/api/faces/register \
-  -F "name=Ana Silva" \
-  -F "image=@./foto.jpg"
-
-# Reconhecer
-curl -X POST http://127.0.0.1:8000/api/faces/recognize \
-  -F "image=@./consulta.jpg"
-
-# Listar
-curl "http://127.0.0.1:8000/api/faces?skip=0&limit=100"
-
-# Excluir: substitua pelo UUID retornado no cadastro
-curl -X DELETE http://127.0.0.1:8000/api/faces/00000000-0000-0000-0000-000000000001
-```
-
-### Resultado do reconhecimento
-
-```json
-{
-  "matched": true,
-  "id": "00000000-0000-0000-0000-000000000001",
-  "name": "Ana Silva",
-  "distance": 0.201,
-  "confidence": 79.9,
-  "message": "Rosto reconhecido com sucesso: Ana Silva!"
-}
-```
 
 A busca usa distância de cosseno e considera correspondência quando a menor distância é de até `0.40`, conforme o repositório facial. Esse exemplo é ilustrativo. `confidence` é calculado a partir da distância, por `max(0, (1 - distance) × 100)`. O campo não representa uma probabilidade estatística calibrada. Quando não há correspondência, `matched` é `false` e `id` e `name` são nulos.
 
-### Falhas tratadas
 
-| Código | Situação |
-| --- | --- |
-| `400` | Nome vazio, arquivo vazio ou imagem inválida. |
-| `404` | Cadastro não encontrado na exclusão. |
-| `415` | Tipo de arquivo diferente de imagem. |
-| `422` | Nenhum rosto, múltiplos rostos ou entrada inválida para o contrato da rota. |
-
-Detalhes adicionais: [endpoints faciais](API/ENDPOINTS-FACIAIS.md) e [fluxo das funcionalidades](API/FLUXO-FEATURES-FACIAIS.md).
-
-## Comandos do WEB
-
-Execute dentro de `WEB`:
-
-| Comando | Finalidade |
-| --- | --- |
-| `npm start` | Servidor de desenvolvimento. |
-| `npm run build` | Build de produção. |
-| `npm run watch` | Build contínuo na configuração de desenvolvimento. |
-| `npm test -- --watch=false` | Executar os testes Angular uma vez. |
-| `npx prettier --check src` | Conferir a formatação dos fontes. |
-
-O repositório contém testes da interface com Vitest. O build gera os arquivos em `WEB/dist/WEB`. Não há pipeline de CI/CD ou configuração de deploy versionados na estrutura atual.
-
-## Solução de problemas
-
-| Problema | O que verificar |
-| --- | --- |
-| API não inicia por configuração | Defina `DATABASE_URL` e confirme o caminho do `.env`. |
-| Erro de conexão com o banco | Confira o estado do container, porta, usuário, senha e nome do banco. |
-| Tabela `faces` ausente | Execute `python -m alembic upgrade head` dentro de `API`. |
-| Extensão `vector` ausente | Habilite a extensão no banco utilizado; o script de inicialização só roda automaticamente em volume vazio. |
-| Erro na instalação de TensorFlow | Confira a compatibilidade da versão do Python, sistema e dependências instaladas no ambiente virtual. |
-| Câmera bloqueada | Libere a permissão no navegador e no sistema e use HTTPS ou localhost. |
-| Câmera ocupada | Feche outros aplicativos que estejam usando o dispositivo e tente novamente. |
-| WEB não alcança a API | Confira a URL do cliente, a porta e se a API está em execução. |
-| Imagem rejeitada | Use um arquivo válido com uma única pessoa e um rosto visível. |
-
-Para parar o banco sem remover seus dados:
-
-```bash
-docker compose --env-file API/infra/.env -f API/infra/compose.yaml down
-```
 
 ## Estado atual e implantação
 
-A configuração atual é voltada à execução local. A API não implementa autenticação ou autorização e permite origens CORS de forma ampla. Antes de disponibilizá-la publicamente, configure controle de acesso, origens permitidas, limites de upload e de requisições, HTTPS e tratamento operacional de falhas.
-
-Os embeddings também são dados biométricos. Defina consentimento, acesso, retenção e exclusão adequados ao uso da aplicação. O código atual não implementa detecção de vivacidade; uma imagem enviada pode ser usada para reconhecimento, portanto o fluxo não deve ser tratado como prova de presença física.
+A API exige JWT e aplica autorização por proprietário em todas as operações faciais. A sessão dura uma hora, e a senha é armazenada apenas como hash bcrypt. O WEB usa `sessionStorage` para a sessão da aba e não salva senhas. A API valida o usuário no banco em cada requisição. Configure `JWT_SECRET_KEY` também na hospedagem antes de publicar a nova versão.
 
 ## Identidade visual
 
@@ -320,15 +238,13 @@ A interface utiliza superfícies escuras e verde, com contraste adaptado no tema
 
 As adaptações dos ícones estão documentadas em [ICONS.md](WEB/ICONS.md), com a licença do Lucide Animated em [public/licenses](WEB/public/licenses).
 
-## Contribuindo
-
-Sugestões de melhorias e relatos de problemas podem ser enviados pelas [issues do repositório](https://github.com/GabrielCost4/Vetra.AI/issues). Descreva o comportamento esperado, o que aconteceu e os passos para reproduzir.
-
-Para contribuir com código, crie uma branch, mantenha as alterações focadas, documente novas configurações e envie um pull request com o contexto e a validação realizada.
-
 ## Licença
 
-O repositório não possui um arquivo de licença geral na raiz. A licença dos ícones de terceiros está incluída junto aos arquivos utilizados.
+O código pode ser utilizado e copiado exclusivamente para fins pessoais e educacionais, incluindo estudo e avaliação, preservando os créditos e o texto da [LICENSE](LICENSE).
+
+Uso comercial, redistribuição, publicação, sublicenciamento e criação ou distribuição de trabalhos derivados exigem autorização prévia e expressa do titular dos direitos autorais. Consulte a [LICENSE](LICENSE) para os termos completos.
+
+Bibliotecas, ferramentas, imagens e demais componentes de terceiros seguem suas próprias licenças. As adaptações dos ícones estão documentadas em [ICONS.md](WEB/ICONS.md), e a licença correspondente está em [public/licenses](WEB/public/licenses).
 
 ---
 
