@@ -1,0 +1,179 @@
+<section class="camera-card" aria-label="Captura facial">
+  <div class="panel-heading">
+    <h2>
+      <app-icon name="camera" /><span><em>01.</em> Captura de imagem</span>
+    </h2>
+    <span class="camera-status"
+      ><i [class.live]="cameraActive()"></i
+      >{{
+        cameraActive() ? 'Câmera ativa' : previewUrl() ? 'Imagem selecionada' : 'Câmera desligada'
+      }}</span
+    >
+  </div>
+  <div class="camera-body">
+    <div class="viewport">
+      <video
+        #videoElement
+        tabindex="-1"
+        autoplay
+        playsinline
+        muted
+        [class.hidden]="!cameraActive() || previewUrl()"
+      ></video>
+      @if (previewUrl()) {
+        <img [src]="previewUrl()" alt="Imagem selecionada para identificação" />
+      }
+      @if (!cameraActive() && !previewUrl()) {
+        <div class="placeholder">
+          <app-icon name="camera" />
+          <h2>Posicione seu rosto</h2>
+          <p>Ative a câmera ou envie uma imagem.</p>
+          <button class="secondary" (click)="startCamera()" [disabled]="cameraStarting()">
+            {{ cameraStarting() ? 'Aguardando câmera…' : 'Ativar câmera' }}
+          </button>
+          @if (cameraStarting()) {
+            <p role="status">Autorize o acesso à câmera no navegador.</p>
+          }
+        </div>
+      }
+      @if (cameraActive() && !previewUrl()) {
+        <div class="face-guide" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+      }
+      <button
+        class="zoom-camera"
+        aria-label="Ampliar câmera"
+        title="Ampliar câmera"
+        (click)="openCameraModal()"
+      >
+        <app-icon name="expand" />
+      </button>
+      <canvas #canvasElement hidden></canvas>
+    </div>
+    @if (cameraError()) {
+      <p class="inline-error" role="alert">{{ cameraError() }}</p>
+    }
+    <div class="camera-source">
+      <app-icon name="camera" /><select
+        aria-label="Selecionar câmera"
+        [ngModel]="selectedCamera"
+        (ngModelChange)="changeCamera($event)"
+      >
+        @if (!cameras().length) {
+          <option value="">Câmera padrão</option>
+        }
+        @for (camera of cameras(); track camera.deviceId) {
+          <option [value]="camera.deviceId">
+            {{ camera.label || 'Câmera ' + ($index + 1) }}
+          </option>
+        }
+      </select>
+    </div>
+    <div class="camera-controls">
+      <label class="upload-button"
+        ><app-icon name="image" />Enviar imagem<input
+          type="file"
+          accept="image/*"
+          (change)="onFileSelected($event)"
+      /></label>
+      @if (mode() === 'recognize') {
+        <button
+          class="primary"
+          [disabled]="(!cameraActive() && !capturedImageBlob()) || busy()"
+          (click)="requestRecognition()"
+        >
+          <app-icon />{{ busy() ? 'Identificando…' : 'Reconhecer pessoa' }}
+        </button>
+      } @else {
+        <button class="primary" [disabled]="!cameraActive()" (click)="captureSnapshot()">
+          <app-icon name="camera" />Capturar foto
+        </button>
+      }
+    </div>
+  </div>
+</section>
+@if (cameraModalOpen() || cameraModalClosing()) {
+  <div
+    class="camera-modal-backdrop"
+    [class.closing]="cameraModalClosing()"
+    (click)="closeCameraModal()"
+    (keydown.escape)="closeCameraModal()"
+  >
+    <section
+      class="camera-modal"
+      [class.closing]="cameraModalClosing()"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="camera-modal-title"
+      (click)="$event.stopPropagation()"
+    >
+      <header class="camera-modal-header">
+        <h2 id="camera-modal-title">
+          {{ mode() === 'register' ? 'Cadastrar facial' : 'Reconhecimento facial' }}
+        </h2>
+        <button
+          class="camera-modal-close"
+          aria-label="Fechar câmera ampliada"
+          (click)="closeCameraModal()"
+        >
+          <app-icon name="close" />
+        </button>
+      </header>
+      <div class="camera-modal-view">
+        <video
+          #modalVideo
+          autoplay
+          playsinline
+          muted
+          [class.hidden]="!cameraActive() || previewUrl()"
+        ></video>
+        @if (previewUrl()) {
+          <img [src]="previewUrl()" alt="Imagem selecionada para identificação" />
+        }
+        @if (cameraActive() && !previewUrl()) {
+          <div class="face-guide" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+        }
+        @if (!cameraActive() && !previewUrl()) {
+          <div class="modal-camera-status" role="status">
+            {{
+              cameraError() ||
+                (cameraStarting() ? 'Aguardando câmera…' : 'Ative a câmera para iniciar')
+            }}
+          </div>
+        }
+      </div>
+      @if (cameraError()) {
+        <p class="inline-error" role="alert">{{ cameraError() }}</p>
+      }
+      <footer class="camera-modal-controls">
+        @if (!cameraActive() && !previewUrl()) {
+          <button
+            class="secondary"
+            (click)="activateCameraFromModal()"
+            [disabled]="cameraStarting()"
+          >
+            {{ cameraStarting() ? 'Aguardando câmera…' : 'Ativar câmera' }}
+          </button>
+        }
+        <label class="upload-button"
+          ><app-icon name="image" />Enviar imagem<input
+            type="file"
+            accept="image/*"
+            (change)="onModalFileSelected($event)"
+        /></label>
+        @if (mode() === 'recognize') {
+          <button
+            class="primary"
+            [disabled]="(!cameraActive() && !capturedImageBlob()) || busy()"
+            (click)="recognizeFromModal()"
+          >
+            <app-icon />{{ busy() ? 'Identificando…' : 'Reconhecer pessoa' }}
+          </button>
+        } @else {
+          <button class="primary" [disabled]="!cameraActive()" (click)="captureFromModal()">
+            <app-icon name="camera" />Capturar foto
+          </button>
+        }
+      </footer>
+    </section>
+  </div>
+}

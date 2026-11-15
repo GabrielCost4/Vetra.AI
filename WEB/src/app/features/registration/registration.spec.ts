@@ -1,11 +1,12 @@
 ﻿import { TestBed } from '@angular/core/testing';
 import { of, throwError } from 'rxjs';
-import { App } from './app';
-import { FaceService } from './services/face.service';
+import { Registration } from './registration';
+import { AppLayout } from '../../layout/app-layout';
+import { FaceService } from '../../shared/services/face.service';
 
 const person = { id: '1', name: 'Ana Silva', created_at: '2026-11-09T12:00:00Z' };
 
-describe('Vetra workspace', () => {
+describe('Registration', () => {
   const service = {
     listFaces: vi.fn(() => of([person])),
     registerFace: vi.fn(() => of({ ...person, message: 'ok' })),
@@ -24,29 +25,27 @@ describe('Vetra workspace', () => {
     });
     vi.clearAllMocks();
     await TestBed.configureTestingModule({
-      imports: [App],
+      imports: [Registration, AppLayout],
       providers: [{ provide: FaceService, useValue: service }],
     }).compileComponents();
   });
 
   it('renders the workspace and restores the selected theme', async () => {
     localStorage.setItem('vetra-theme', 'light');
-    const fixture = TestBed.createComponent(App);
+    const fixture = TestBed.createComponent(AppLayout);
     fixture.detectChanges();
     await fixture.whenStable();
-    expect(fixture.nativeElement.querySelector('h1').textContent).toContain(
-      'Reconhecimento facial',
-    );
+    expect(fixture.nativeElement.querySelector('h1').textContent).toContain('Cadastro facial');
     expect(document.documentElement.dataset['theme']).toBe('light');
-    fixture.componentInstance.toggleTheme();
+    fixture.componentInstance.setTheme('dark');
     expect(localStorage.getItem('vetra-theme')).toBe('dark');
     fixture.destroy();
   });
 
   it('shows registration validation in the corner notification', () => {
-    const fixture = TestBed.createComponent(App);
+    const fixture = TestBed.createComponent(Registration);
+    fixture.detectChanges();
     const app = fixture.componentInstance;
-    app.setTab('register');
     app.executeRegister();
     fixture.detectChanges();
     expect(service.registerFace).not.toHaveBeenCalled();
@@ -57,11 +56,12 @@ describe('Vetra workspace', () => {
   });
 
   it('submits the selected image and shows a success message', () => {
-    const fixture = TestBed.createComponent(App);
+    const fixture = TestBed.createComponent(Registration);
+    fixture.detectChanges();
     const app = fixture.componentInstance;
     app.registerName = ' Ana Silva ';
     const image = new Blob(['image'], { type: 'image/jpeg' });
-    app.capturedImageBlob.set(image);
+    app.camera!.capturedImageBlob.set(image);
     app.executeRegister();
     fixture.detectChanges();
     expect(service.registerFace).toHaveBeenCalledWith('Ana Silva', image);
@@ -76,10 +76,11 @@ describe('Vetra workspace', () => {
     service.registerFace.mockReturnValueOnce(
       throwError(() => ({ error: { detail: 'Rosto não detectado.' } })),
     );
-    const fixture = TestBed.createComponent(App);
+    const fixture = TestBed.createComponent(Registration);
+    fixture.detectChanges();
     const app = fixture.componentInstance;
     app.registerName = 'Ana';
-    app.capturedImageBlob.set(new Blob(['image']));
+    app.camera!.capturedImageBlob.set(new Blob(['image']));
     app.executeRegister();
     fixture.detectChanges();
     expect(fixture.nativeElement.querySelector('.toast.error').textContent).toContain(

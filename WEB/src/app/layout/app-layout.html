@@ -1,0 +1,134 @@
+<div
+  class="shell"
+  [class.sidebar-collapsed]="sidebarCollapsed()"
+  [class.mobile-menu-open]="mobileMenuOpen()"
+>
+  @if (mobileMenuOpen()) {
+    <button class="sidebar-backdrop" aria-label="Fechar menu" (click)="closeMobileMenu()"></button>
+  }
+  <aside
+    id="main-sidebar"
+    class="sidebar"
+    aria-label="Navegação principal"
+    [attr.role]="mobileMenuOpen() ? 'dialog' : null"
+    [attr.aria-modal]="mobileMenuOpen() ? 'true' : null"
+    (keydown)="onSidebarKeydown($event)"
+  >
+    <div class="sidebar-header">
+      <button
+        id="mobile-menu-close"
+        class="mobile-close"
+        aria-label="Fechar menu"
+        (click)="closeMobileMenu()"
+      >
+        <app-icon name="close" />
+      </button>
+      <a class="brand" href="/" aria-label="Vetra.AI — início"
+        ><img
+          [src]="theme() === 'dark' ? 'brand/vetra-logo-dark.png' : 'brand/vetra-logo-light.png'"
+          alt="Vetra.AI"
+          width="2172"
+          height="724"
+      /></a>
+      <button
+        class="collapse-button"
+        (click)="sidebarCollapsed.set(!sidebarCollapsed())"
+        [attr.aria-expanded]="!sidebarCollapsed()"
+        [attr.aria-label]="sidebarCollapsed() ? 'Expandir barra lateral' : 'Recolher barra lateral'"
+        [title]="sidebarCollapsed() ? 'Expandir barra lateral' : 'Recolher barra lateral'"
+      >
+        <app-icon name="panel" />
+      </button>
+    </div>
+    <nav aria-label="Seções" class="tabs">
+      <button
+        [class.active]="activeTab() === 'register'"
+        (click)="setTab('register')"
+        [attr.aria-current]="activeTab() === 'register' ? 'page' : null"
+        title="Cadastro facial"
+      >
+        <app-icon /><span>Cadastro facial</span>
+      </button>
+      <button
+        [class.active]="activeTab() === 'recognize'"
+        (click)="setTab('recognize')"
+        [attr.aria-current]="activeTab() === 'recognize' ? 'page' : null"
+        title="Reconhecimento"
+      >
+        <app-icon name="camera" /><span>Reconhecimento</span>
+      </button>
+      <button
+        [class.active]="activeTab() === 'manage'"
+        (click)="setTab('manage')"
+        [attr.aria-current]="activeTab() === 'manage' ? 'page' : null"
+        title="Pessoas"
+      >
+        <app-icon name="users" /><span>Pessoas</span>
+      </button>
+    </nav>
+    <div class="sidebar-divider"></div>
+  </aside>
+  <main [attr.inert]="mobileMenuOpen() ? '' : null">
+    <div class="topbar">
+      <button
+        #mobileMenuTrigger
+        class="mobile-menu-button"
+        aria-label="Abrir menu"
+        aria-controls="main-sidebar"
+        [attr.aria-expanded]="mobileMenuOpen()"
+        (click)="openMobileMenu()"
+      >
+        <app-icon name="menu" />
+      </button>
+      <div class="theme-switch" role="group" aria-label="Tema">
+        <button
+          (click)="setTheme('light')"
+          [class.selected]="theme() === 'light'"
+          aria-label="Ativar tema claro"
+          [attr.aria-pressed]="theme() === 'light'"
+        >
+          <app-icon name="sun" /></button
+        ><button
+          (click)="setTheme('dark')"
+          [class.selected]="theme() === 'dark'"
+          aria-label="Ativar tema escuro"
+          [attr.aria-pressed]="theme() === 'dark'"
+        >
+          <app-icon name="moon" />
+        </button>
+      </div>
+    </div>
+    <div class="page-heading">
+      <h1>
+        {{
+          activeTab() === 'manage'
+            ? 'Pessoas cadastradas'
+            : activeTab() === 'register'
+              ? 'Cadastro facial'
+              : 'Reconhecimento facial'
+        }}
+      </h1>
+      <p>
+        {{
+          activeTab() === 'manage'
+            ? 'Consulte e gerencie os cadastros faciais.'
+            : activeTab() === 'register'
+              ? 'Capture ou envie uma imagem para cadastrar uma pessoa.'
+              : 'Capture ou envie uma imagem para identificar uma pessoa.'
+        }}
+      </p>
+    </div>
+    @switch (activeTab()) {
+      @case ('register') {
+        <app-registration />
+      }
+      @case ('recognize') {
+        <app-recognition />
+      }
+      @case ('manage') {
+        <app-people (registerRequested)="setTab('register')" />
+      }
+    }
+    <footer>&copy; Vetra.AI 2026 - Todos os direitos reservados</footer>
+  </main>
+</div>

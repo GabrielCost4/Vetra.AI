@@ -1,0 +1,75 @@
+<div class="capture-layout">
+  <app-camera-capture
+    [busy]="isRecognizing()"
+    (imageChanged)="resetResult()"
+    mode="recognize"
+    (recognize)="executeRecognition()"
+  />
+  <section class="action-card">
+    <div class="panel-heading">
+      <h2>
+        <app-icon name="users" /><span><em>02.</em> Identifica??o</span>
+      </h2>
+    </div>
+    <div class="action-content">
+      @if (recognitionResult(); as result) {
+        <div class="result" aria-live="polite">
+          <div class="result-summary">
+            @if (camera?.previewUrl()) {
+              <img
+                class="result-photo"
+                [src]="camera?.previewUrl()"
+                alt="Imagem utilizada nesta identificação"
+              />
+            }
+            <div class="result-details">
+              <span class="result-badge" [class.unmatched]="!result.matched">{{
+                result.matched ? 'Identificação encontrada' : 'Sem correspondência'
+              }}</span>
+              <h2>{{ result.matched ? result.name : 'Pessoa não encontrada' }}</h2>
+              @if (result.matched) {
+                <p class="person-id">ID: {{ result.id }}</p>
+              }
+              @if (result.matched && result.confidence !== null) {
+                <div class="similarity">
+                  <span>Similaridade</span
+                  ><strong>{{ confidencePercent(result.confidence) | number: '1.1-1' }}%</strong>
+                </div>
+                <progress max="100" [value]="confidencePercent(result.confidence)">
+                  Similaridade
+                </progress>
+              }
+            </div>
+          </div>
+          <div class="result-meta">
+            <app-icon name="calendar" /><span>Último reconhecimento</span
+            ><time>{{ recognizedAt() | date: 'dd/MM/yyyy HH:mm' }}</time>
+          </div>
+        </div>
+      } @else {
+        <div class="result-empty" role="status">
+          <app-icon />
+          <h2>{{ isRecognizing() ? 'Identificando pessoa…' : 'Aguardando imagem' }}</h2>
+          <p>
+            {{
+              isRecognizing()
+                ? 'Aguarde o resultado da identificação.'
+                : 'Capture ou envie uma imagem para iniciar o reconhecimento.'
+            }}
+          </p>
+        </div>
+      }
+      @if (recognitionError()) {
+        <p class="inline-error" role="alert">{{ recognitionError() }}</p>
+      }
+
+      <button
+        class="secondary new-analysis"
+        (click)="camera?.retakePhoto()"
+        [disabled]="isRecognizing()"
+      >
+        <app-icon name="refresh" />Nova an?lise
+      </button>
+    </div>
+  </section>
+</div>

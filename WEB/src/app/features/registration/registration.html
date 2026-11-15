@@ -1,0 +1,53 @@
+<div class="capture-layout">
+  <app-camera-capture [busy]="isRegistering()" (imageChanged)="resetResult()" />
+  <section class="action-card">
+    <div class="panel-heading">
+      <h2>
+        <app-icon name="users" /><span><em>02.</em> Novo cadastro</span>
+      </h2>
+    </div>
+    <div class="action-content">
+      <form (ngSubmit)="executeRegister()">
+        <h2>Cadastrar pessoa</h2>
+        <p>Informe o nome e selecione uma imagem com o rosto visível.</p>
+        <label for="person-name">Nome da pessoa</label
+        ><input
+          id="person-name"
+          name="personName"
+          autocomplete="name"
+          placeholder="Nome completo"
+          [(ngModel)]="registerName"
+          maxlength="200"
+        /><button class="primary full" type="submit" [disabled]="isRegistering()">
+          <app-icon />{{ isRegistering() ? 'Cadastrando…' : 'Cadastrar facial' }}
+        </button>
+      </form>
+      <div class="toast-region" aria-live="polite" aria-atomic="true">
+        @if (notification(); as message) {
+          <div
+            class="toast"
+            [class.error]="message.type === 'error'"
+            [attr.role]="message.type === 'error' ? 'alert' : 'status'"
+          >
+            <span class="toast-mark">{{ message.type === 'success' ? '✓' : '!' }}</span>
+            <div>
+              <strong>{{
+                message.type === 'success' ? 'Cadastro concluído' : 'Não foi possível cadastrar'
+              }}</strong>
+              <p>{{ message.text }}</p>
+            </div>
+            <button (click)="notification.set(null)" aria-label="Fechar mensagem">×</button>
+          </div>
+        }
+      </div>
+
+      <button
+        class="secondary new-analysis"
+        (click)="camera?.retakePhoto()"
+        [disabled]="isRegistering()"
+      >
+        <app-icon name="refresh" />Nova captura
+      </button>
+    </div>
+  </section>
+</div>

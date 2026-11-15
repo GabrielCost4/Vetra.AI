@@ -1,0 +1,48 @@
+<section class="people-card">
+  <div class="panel-heading">
+    <b>Diretório de pessoas</b
+    ><button class="secondary" (click)="registerRequested.emit()">Cadastrar facial</button>
+  </div>
+  @if (isLoadingFaces()) {
+    <p class="empty" role="status">Carregando cadastros…</p>
+  } @else if (listError()) {
+    <div class="empty" role="alert">
+      <p>{{ listError() }}</p>
+      <button class="secondary" (click)="loadFaces()">Tentar novamente</button>
+    </div>
+  } @else if (!visibleFaces().length && faces().length) {
+    <div class="empty">
+      <app-icon name="users" />
+      <h2>Nenhum cadastro neste navegador</h2>
+      <p>Cadastros feitos aqui aparecerão nesta lista.</p>
+    </div>
+  } @else if (!faces().length) {
+    <div class="empty">
+      <app-icon name="users" />
+      <h2>Nenhuma pessoa cadastrada</h2>
+      <p>Adicione o primeiro rosto para começar.</p>
+    </div>
+  } @else {
+    <ul class="people-list">
+      @for (face of visibleFaces(); track face.id) {
+        <li>
+          <span class="avatar">{{ face.name.charAt(0).toUpperCase() }}</span>
+          <div>
+            <h3>{{ face.name }}</h3>
+            <p>Cadastrado em {{ face.created_at | date: 'dd/MM/yyyy' }}</p>
+          </div>
+          <button
+            class="delete-button"
+            (click)="deleteFace(face)"
+            [attr.aria-label]="'Excluir cadastro de ' + face.name"
+          >
+            Excluir
+          </button>
+        </li>
+      }
+    </ul>
+  }
+  @if (deleteError()) {
+    <p class="inline-error" role="alert">{{ deleteError() }}</p>
+  }
+</section>

@@ -72,10 +72,16 @@ flowchart LR
 
 | Caminho | Responsabilidade |
 | --- | --- |
-| `WEB/src/app/app.*` | Navegação, câmera, formulários, resultados e diretório de pessoas. |
-| `WEB/src/app/services/face.service.ts` | Cliente HTTP utilizado pela interface. |
-| `WEB/src/app/models/face.model.ts` | Contratos TypeScript das respostas. |
-| `WEB/src/styles.css` e `WEB/src/shell.css` | Cores, temas, menu lateral e elementos compartilhados. |
+| `WEB/src/app/app.*` | Componente raiz. |
+| `WEB/src/app/layout` | Layout, menu, tema e navegação. |
+| `WEB/src/app/features/registration` | Tela de cadastro facial. |
+| `WEB/src/app/features/recognition` | Tela de reconhecimento facial. |
+| `WEB/src/app/features/people` | Listagem e exclusão dos cadastros deste navegador. |
+| `WEB/src/app/shared/ui/camera-capture` | Captura, upload, prévia e modal de câmera compartilhados. |
+| `WEB/src/app/shared/data-access/local-face-registry.ts` | Persistência dos IDs locais. |
+| `WEB/src/app/shared/data-access/face.service.ts` | Cliente HTTP utilizado pela interface. |
+| `WEB/src/app/shared/data-access/models/face.model.ts` | Contratos TypeScript das respostas. |
+| `WEB/src/styles.css` | Temas e estilos globais; estilos de cada componente ficam em seu CSS. |
 | `WEB/public/brand` | Logos para os temas claro e escuro. |
 | `API/app/routers` | Endpoints e integração com os serviços. |
 | `API/app/services` | Leitura da imagem, detecção do rosto, embeddings e operações faciais. |
@@ -195,7 +201,7 @@ npm ci
 npm start
 ```
 
-Abra http://localhost:4200. O cliente usa `http://127.0.0.1:8000/api/faces`, configurado em [face.service.ts](WEB/src/app/services/face.service.ts). Se alterar a porta ou o endereço da API, ajuste esse arquivo.
+Abra http://localhost:4200. O cliente usa `http://127.0.0.1:8000/api/faces`, configurado em [face.service.ts](WEB/src/app/shared/data-access/face.service.ts). Se alterar a porta ou o endereço da API, ajuste esse arquivo.
 
 Para acessar por outro dispositivo, configure um endereço de API acessível por ele. `127.0.0.1` sempre aponta para o próprio dispositivo que está acessando a aplicação. A captura de câmera exige HTTPS ou uma origem local considerada segura pelo navegador.
 
