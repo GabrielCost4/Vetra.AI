@@ -1,3 +1,3 @@
 export const environment = {
-  apiUrl: 'https://vetra-ai-a33s.vercel.app/api',
+  apiUrl: 'https://vetra-ai-api.vercel.app/api',
 };
