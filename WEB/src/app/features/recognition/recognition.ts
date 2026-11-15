@@ -29,6 +29,18 @@ export class Recognition {
   readonly recognitionError = signal<string | null>(null);
 
   readonly recognizedAt = signal<Date | null>(null);
+  private errorTimer: ReturnType<typeof setTimeout> | null = null;
+  ngOnDestroy(): void {
+    if (this.errorTimer) clearTimeout(this.errorTimer);
+  }
+  private showError(message: string): void {
+    if (this.errorTimer) clearTimeout(this.errorTimer);
+    this.recognitionError.set(message);
+    this.errorTimer = setTimeout(() => {
+      this.recognitionError.set(null);
+      this.errorTimer = null;
+    }, 3000);
+  }
   confidencePercent(confidence: number): number {
     return Math.max(0, Math.min(100, confidence));
   }
@@ -36,7 +48,7 @@ export class Recognition {
     if (this.isRecognizing()) return;
     const blob = this.camera?.capturedImageBlob();
     if (!blob) {
-      this.recognitionError.set('Capture uma foto ou faça upload antes de reconhecer.');
+      this.showError('Capture uma foto ou faça upload antes de reconhecer.');
       return;
     }
 
@@ -55,7 +67,7 @@ export class Recognition {
         },
         error: (err) => {
           const detail = err.error?.detail || 'Erro ao processar o reconhecimento facial.';
-          this.recognitionError.set(detail);
+          this.showError(detail);
           this.isRecognizing.set(false);
         },
       });

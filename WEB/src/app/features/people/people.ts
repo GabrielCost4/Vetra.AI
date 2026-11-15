@@ -25,6 +25,16 @@ export class People implements OnInit {
   readonly isLoadingFaces = signal(false);
   readonly deleteError = signal<string | null>(null);
   readonly listError = signal<string | null>(null);
+  private errorTimer: ReturnType<typeof setTimeout> | null = null;
+  private showDeleteError(message: string): void {
+    if (this.errorTimer) clearTimeout(this.errorTimer);
+    this.deleteError.set(message);
+    this.errorTimer = setTimeout(() => {
+      this.deleteError.set(null);
+      this.errorTimer = null;
+    }, 3000);
+  }
+  readonly facePendingDeletion = signal<FaceResponse | null>(null);
   ngOnInit(): void {
     this.loadFaces();
   }
@@ -46,11 +56,15 @@ export class People implements OnInit {
         },
       });
   }
-  deleteFace(face: FaceResponse): void {
-    if (!confirm(`Deseja realmente remover o cadastro de "${face.name}"?`)) {
-      return;
-    }
-
+  requestDelete(face: FaceResponse): void {
+    this.facePendingDeletion.set(face);
+  }
+  cancelDelete(): void {
+    this.facePendingDeletion.set(null);
+  }
+  confirmDelete(): void {
+    const face = this.facePendingDeletion();
+    if (!face) return;
     this.faceService
       .deleteFace(face.id)
       .pipe(takeUntilDestroyed(this.destroyRef))
@@ -58,10 +72,11 @@ export class People implements OnInit {
         next: () => {
           this.faces.update((list) => list.filter((f) => f.id !== face.id));
           this.registry.remove(face.id);
+          this.facePendingDeletion.set(null);
         },
         error: (err) => {
           const detail = err.error?.detail || 'Não foi possível excluir o cadastro.';
-          this.deleteError.set(detail);
+          this.showDeleteError(detail);
         },
       });
   }

@@ -41,6 +41,11 @@ export class Registration implements OnDestroy {
     this.notificationTimer = null;
     this.registerError.set(text);
     this.notification.set({ type: 'error', text });
+    this.notificationTimer = setTimeout(() => {
+      this.notification.set(null);
+      this.registerError.set(null);
+      this.notificationTimer = null;
+    }, 3000);
   }
 
   executeRegister(): void {

@@ -431,7 +431,7 @@ footer {
     transform 0.32s cubic-bezier(0.22, 1, 0.36, 1),
     background-color 0.3s ease;
 }
-[data-theme='light'] .theme-switch::before {
+:host-context([data-theme='light']) .theme-switch::before {
   transform: translateX(0);
 }
 .theme-switch button.selected {
@@ -467,9 +467,10 @@ footer {
 .sidebar-header {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   min-height: 48px;
   margin: 0 8px 42px;
+  transform: translateY(12px);
 }
 .sidebar-header .brand {
   margin: 0;
@@ -488,7 +489,7 @@ footer {
   width: 36px;
   height: 36px;
   padding: 0;
-  margin-left: auto;
+  margin-left: 0;
   border-radius: 7px;
 }
 .sidebar-header .collapse-button app-icon {
@@ -496,6 +497,7 @@ footer {
   height: 22px;
 }
 .sidebar-collapsed .sidebar-header {
+  width: 100%;
   justify-content: center;
   margin-left: 0;
   margin-right: 0;
@@ -504,11 +506,32 @@ footer {
   display: none;
 }
 .sidebar-collapsed .sidebar-header .collapse-button {
+  flex: 0 0 40px;
+  width: 40px;
+  height: 40px;
   margin-left: 0;
+  padding: 0;
+}
+.sidebar-collapsed .tabs {
+  width: 100%;
+  align-items: stretch;
+}
+.sidebar-collapsed .tabs button {
+  width: 100%;
+  min-width: 0;
+  justify-content: center;
+  gap: 0;
+  padding: 14px 0;
+}
+.sidebar-collapsed .tabs app-icon {
+  flex: 0 0 26px;
+}
+.sidebar-collapsed .sidebar-divider {
+  width: calc(100% - 16px);
 }
 @media (max-width: 1250px) {
   .sidebar-header {
-    gap: 4px;
+    gap: 12px;
     margin-left: 0;
     margin-right: 0;
   }
@@ -559,10 +582,10 @@ footer {
   display: none;
 }
 @media (max-width: 650px) {
-  :root .shell {
+  .shell {
     grid-template-columns: minmax(0, 1fr);
   }
-  :root .topbar {
+  .topbar {
     justify-content: space-between;
     align-items: flex-start;
   }
