@@ -17,6 +17,81 @@ main {
 .topbar {
   display: flex;
   justify-content: flex-end;
+  align-items: flex-start;
+  gap: 16px;
+}
+.account-menu {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-height: 46px;
+}
+.account-avatar {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 14px;
+  font-weight: 700;
+}
+.account-avatar:hover {
+  border-color: var(--accent);
+}
+.account-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 80;
+  width: min(280px, calc(100vw - 32px));
+  padding: 8px;
+  color: var(--text);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--panel);
+  box-shadow: 0 14px 36px rgb(0 0 0 / 22%);
+}
+.account-dropdown-user {
+  display: grid;
+  gap: 4px;
+  padding: 12px;
+}
+.account-dropdown-user strong {
+  font-size: 14px;
+}
+.account-dropdown-user span {
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 12px;
+  text-overflow: ellipsis;
+}
+.account-logout {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 12px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text);
+  text-align: left;
+}
+.account-logout:hover {
+  background: var(--raised);
+  color: var(--coral);
+}
+.account-logout app-icon {
+  width: 18px;
+  height: 18px;
+}
+@media (max-width: 650px) {
+  .account-menu {
+    margin-left: 0;
+  }
 }
 .page-heading {
   margin: 18px 8px 34px;
@@ -586,9 +661,10 @@ footer {
     grid-template-columns: minmax(0, 1fr);
   }
   .topbar {
-    justify-content: space-between;
+    justify-content: flex-start;
     align-items: flex-start;
   }
+  .topbar .theme-switch { margin-left: auto; }
   .mobile-menu-button,
   .mobile-close {
     display: grid;
@@ -659,6 +735,8 @@ footer {
     flex-shrink: 0;
   }
   .sidebar .tabs button {
+    width: 100%;
+    justify-content: flex-start;
     gap: 16px;
     padding: 14px 18px;
     font-size: 15px;

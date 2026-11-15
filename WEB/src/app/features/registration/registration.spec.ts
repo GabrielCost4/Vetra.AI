@@ -3,8 +3,14 @@ import { of, throwError } from 'rxjs';
 import { Registration } from './registration';
 import { AppLayout } from '../../layout/app-layout';
 import { FaceService } from '../../shared/services/face.service';
+import { AuthService } from '../../shared/services/auth.service';
 
-const person = { id: '1', name: 'Ana Silva', created_at: '2026-11-09T12:00:00Z' };
+const person = {
+  id: '1',
+  user_id: 'account-1',
+  name: 'Ana Silva',
+  created_at: '2026-11-09T12:00:00Z',
+};
 
 describe('Registration', () => {
   const service = {
@@ -26,7 +32,10 @@ describe('Registration', () => {
     vi.clearAllMocks();
     await TestBed.configureTestingModule({
       imports: [Registration, AppLayout],
-      providers: [{ provide: FaceService, useValue: service }],
+      providers: [
+        { provide: FaceService, useValue: service },
+        { provide: AuthService, useValue: { user: () => ({ name: 'Ana' }), logout: vi.fn() } },
+      ],
     }).compileComponents();
   });
 

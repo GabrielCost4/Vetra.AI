@@ -1,1 +1,7 @@
-<app-layout />
+@if (auth.restoring()) {
+  <p class="session-loading" role="status">Carregando sua sessão…</p>
+} @else if (auth.user()) {
+  <app-layout />
+} @else {
+  <app-auth />
+}

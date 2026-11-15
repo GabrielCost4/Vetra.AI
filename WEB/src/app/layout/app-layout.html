@@ -97,6 +97,38 @@
           <app-icon name="moon" />
         </button>
       </div>
+      <div
+        class="account-menu"
+        (keydown.escape)="closeAccountMenu()"
+        (click)="$event.stopPropagation()"
+      >
+        <button
+          class="account-avatar"
+          type="button"
+          (click)="toggleAccountMenu()"
+          [attr.aria-expanded]="accountMenuOpen()"
+          aria-haspopup="menu"
+          aria-label="Abrir menu da conta"
+          title="{{ auth.user()?.name }}"
+        >
+          {{ accountInitials() }}
+        </button>
+        @if (accountMenuOpen()) {
+          <div
+            class="account-dropdown"
+            role="menu"
+            [attr.aria-label]="'Conta de ' + auth.user()?.name"
+          >
+            <div class="account-dropdown-user">
+              <strong>{{ auth.user()?.name }}</strong>
+              <span>{{ auth.user()?.email }}</span>
+            </div>
+            <button class="account-logout" type="button" role="menuitem" (click)="auth.logout()">
+              <app-icon name="logout" />Sair
+            </button>
+          </div>
+        }
+      </div>
     </div>
     <div class="page-heading">
       <h1>

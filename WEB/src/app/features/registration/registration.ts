@@ -1,6 +1,5 @@
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { DestroyRef } from '@angular/core';
-import { LocalFaceRegistry } from '../../shared/data-access/local-face-registry';
 import { CameraCapture } from '../../shared/ui/camera-capture/camera-capture';
 import { Component, inject, ViewChild, OnDestroy, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -17,7 +16,6 @@ import { RegisterFaceResponse } from '../../shared/models/face.model';
   styleUrl: './registration.css',
 })
 export class Registration implements OnDestroy {
-  private readonly registry = inject(LocalFaceRegistry);
   ngOnDestroy(): void {
     if (this.notificationTimer) clearTimeout(this.notificationTimer);
   }
@@ -75,7 +73,6 @@ export class Registration implements OnDestroy {
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (res) => {
-          this.registry.add(res.id);
           this.registerSuccess.set(res);
           this.notification.set({
             type: 'success',

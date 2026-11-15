@@ -11,6 +11,7 @@ import { Icon } from '../shared/ui/icon';
 import { Registration } from '../features/registration/registration';
 import { Recognition } from '../features/recognition/recognition';
 import { People } from '../features/people/people';
+import { AuthService } from '../shared/services/auth.service';
 @Component({
   selector: 'app-layout',
   standalone: true,
@@ -20,11 +21,13 @@ import { People } from '../features/people/people';
   host: { '(document:keydown.escape)': 'closeMobileMenu()', '(window:resize)': 'onWindowResize()' },
 })
 export class AppLayout implements OnInit {
+  readonly auth = inject(AuthService);
   private readonly changeDetector = inject(ChangeDetectorRef);
   readonly activeTab = signal<'register' | 'recognize' | 'manage'>('register');
   readonly theme = signal<'dark' | 'light'>('dark');
   readonly sidebarCollapsed = signal(false);
   readonly mobileMenuOpen = signal(false);
+  readonly accountMenuOpen = signal(false);
   @ViewChild('mobileMenuTrigger') mobileMenuTrigger?: ElementRef<HTMLButtonElement>;
 
   openMobileMenu(): void {
@@ -42,6 +45,23 @@ export class AppLayout implements OnInit {
 
   onWindowResize(): void {
     if (window.innerWidth > 650) this.mobileMenuOpen.set(false);
+  }
+
+  toggleAccountMenu(): void {
+    this.accountMenuOpen.update((open) => !open);
+  }
+
+  closeAccountMenu(): void {
+    this.accountMenuOpen.set(false);
+  }
+
+  accountInitials(): string {
+    const name = this.auth.user()?.name.trim();
+    if (!name) return '?';
+    const parts = name.split(/\s+/);
+    return parts.length > 1
+      ? `${parts[0][0]}${parts[parts.length - 1][0]}`.toLocaleUpperCase()
+      : parts[0].slice(0, 1).toLocaleUpperCase();
   }
 
   onSidebarKeydown(event: KeyboardEvent): void {

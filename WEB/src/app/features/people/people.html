@@ -10,12 +10,6 @@
       <p>{{ listError() }}</p>
       <button class="secondary" (click)="loadFaces()">Tentar novamente</button>
     </div>
-  } @else if (!visibleFaces().length && faces().length) {
-    <div class="empty">
-      <app-icon name="users" />
-      <h2>Nenhum cadastro neste navegador</h2>
-      <p>Cadastros feitos aqui aparecerão nesta lista.</p>
-    </div>
   } @else if (!faces().length) {
     <div class="empty">
       <app-icon name="users" />
@@ -24,7 +18,7 @@
     </div>
   } @else {
     <ul class="people-list">
-      @for (face of visibleFaces(); track face.id) {
+      @for (face of faces(); track face.id) {
         <li>
           <span class="avatar">{{ face.name.charAt(0).toUpperCase() }}</span>
           <div>
@@ -48,10 +42,20 @@
 </section>
 @if (facePendingDeletion(); as face) {
   <div class="delete-modal-backdrop" (click)="cancelDelete()" (keydown.escape)="cancelDelete()">
-    <section class="delete-modal" role="alertdialog" aria-modal="true" aria-labelledby="delete-title" aria-describedby="delete-description" (click)="$event.stopPropagation()">
+    <section
+      class="delete-modal"
+      role="alertdialog"
+      aria-modal="true"
+      aria-labelledby="delete-title"
+      aria-describedby="delete-description"
+      (click)="$event.stopPropagation()"
+    >
       <div class="delete-modal-icon"><app-icon name="users" /></div>
       <h2 id="delete-title">Remover cadastro?</h2>
-      <p id="delete-description">Deseja remover o cadastro de <strong>{{ face.name }}</strong>? Essa ação não pode ser desfeita.</p>
+      <p id="delete-description">
+        Deseja remover o cadastro de <strong>{{ face.name }}</strong
+        >? Essa ação não pode ser desfeita.
+      </p>
       <div class="delete-modal-actions">
         <button class="cancel-delete" (click)="cancelDelete()">Não</button>
         <button class="confirm-delete" (click)="confirmDelete()">Sim, quero remover</button>

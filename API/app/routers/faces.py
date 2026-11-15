@@ -1,8 +1,20 @@
+from typing import Annotated
 from uuid import UUID
-from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, status
+
+from fastapi import (
+    APIRouter,
+    Depends,
+    File,
+    Form,
+    HTTPException,
+    Query,
+    UploadFile,
+    status,
+)
 from sqlalchemy.orm import Session
 
 from app.database.connection import get_db
+from app.dependencies.auth import get_face_owner
 from app.schemas.face import FaceResponse, RecognizeFaceResponse, RegisterFaceResponse
 from app.services.facial_service import facial_service
 
@@ -19,11 +31,14 @@ router = APIRouter(
     summary="Cadastrar um novo rosto",
 )
 async def register_face(
-    name: str = Form(...),
+    user_id: Annotated[UUID, Depends(get_face_owner)],
+    name: str = Form(..., min_length=1, max_length=150),
     image: UploadFile = File(...),
     db: Session = Depends(get_db),
 ):
-    return await facial_service.register_face(name=name, image=image, db=db)
+    return await facial_service.register_face(
+        name=name, image=image, db=db, user_id=user_id
+    )
 
 
 @router.post(
@@ -33,10 +48,11 @@ async def register_face(
     summary="Reconhecer um rosto a partir da imagem",
 )
 async def recognize_face(
+    user_id: Annotated[UUID, Depends(get_face_owner)],
     image: UploadFile = File(...),
     db: Session = Depends(get_db),
 ):
-    return await facial_service.recognize_face(image=image, db=db)
+    return await facial_service.recognize_face(image=image, db=db, user_id=user_id)
 
 
 @router.get(
@@ -46,11 +62,12 @@ async def recognize_face(
     summary="Listar rostos cadastrados",
 )
 def list_faces(
-    skip: int = 0,
-    limit: int = 100,
+    user_id: Annotated[UUID, Depends(get_face_owner)],
+    skip: int = Query(0, ge=0),
+    limit: int = Query(100, ge=1, le=100),
     db: Session = Depends(get_db),
 ):
-    return facial_service.list_faces(db=db, skip=skip, limit=limit)
+    return facial_service.list_faces(db=db, user_id=user_id, skip=skip, limit=limit)
 
 
 @router.delete(
@@ -59,10 +76,11 @@ def list_faces(
     summary="Excluir um rosto cadastrado",
 )
 def delete_face(
+    user_id: Annotated[UUID, Depends(get_face_owner)],
     face_id: UUID,
     db: Session = Depends(get_db),
 ):
-    success = facial_service.delete_face(face_id=face_id, db=db)
+    success = facial_service.delete_face(face_id=face_id, db=db, user_id=user_id)
     if not success:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,

@@ -1,6 +1,5 @@
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { DestroyRef } from '@angular/core';
-import { LocalFaceRegistry } from '../../shared/data-access/local-face-registry';
 import { Component, inject, output, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Icon } from '../../shared/ui/icon';
@@ -18,10 +17,7 @@ export class People implements OnInit {
   private readonly destroyRef = inject(DestroyRef);
   private readonly faceService = inject(FaceService);
   readonly faces = signal<FaceResponse[]>([]);
-  private readonly registry = inject(LocalFaceRegistry);
   readonly registerRequested = output<void>();
-  readonly visibleFaces = () =>
-    this.faces().filter((face) => this.registry.ids().includes(face.id));
   readonly isLoadingFaces = signal(false);
   readonly deleteError = signal<string | null>(null);
   readonly listError = signal<string | null>(null);
@@ -35,6 +31,9 @@ export class People implements OnInit {
     }, 3000);
   }
   readonly facePendingDeletion = signal<FaceResponse | null>(null);
+  ngOnDestroy(): void {
+    if (this.errorTimer) clearTimeout(this.errorTimer);
+  }
   ngOnInit(): void {
     this.loadFaces();
   }
@@ -71,7 +70,6 @@ export class People implements OnInit {
       .subscribe({
         next: () => {
           this.faces.update((list) => list.filter((f) => f.id !== face.id));
-          this.registry.remove(face.id);
           this.facePendingDeletion.set(null);
         },
         error: (err) => {

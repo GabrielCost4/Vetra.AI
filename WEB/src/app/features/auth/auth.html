@@ -1,0 +1,93 @@
+<main class="auth-page">
+  <section class="auth-card" aria-labelledby="auth-title">
+    <div class="auth-brand">
+      <app-icon /><span>VETRA<span class="brand-accent">.AI</span></span>
+    </div>
+    <h1 id="auth-title">{{ creatingAccount() ? 'Crie sua conta' : 'Entre na sua conta' }}</h1>
+    <p class="auth-description">Acesse seus cadastros e reconheça os rostos da sua conta.</p>
+
+    <form #authForm="ngForm" (ngSubmit)="submit(authForm)" novalidate>
+      @if (creatingAccount()) {
+        <label for="account-name"><app-icon name="user" />Nome</label>
+        <input
+          id="account-name"
+          name="name"
+          [(ngModel)]="name"
+          #nameField="ngModel"
+          required
+          minlength="2"
+          maxlength="150"
+          autocomplete="name"
+          [disabled]="submitting()"
+          [attr.aria-invalid]="nameField.invalid && nameField.touched"
+        />
+        @if (nameField.invalid && nameField.touched) {
+          <p class="field-error">Informe um nome de 2 a 150 caracteres.</p>
+        }
+      }
+      <label for="account-email"><app-icon name="mail" />Email</label>
+      <input
+        id="account-email"
+        type="email"
+        name="email"
+        [(ngModel)]="email"
+        #emailField="ngModel"
+        required
+        email
+        maxlength="254"
+        autocomplete="email"
+        [disabled]="submitting()"
+        [attr.aria-invalid]="emailField.invalid && emailField.touched"
+      />
+      @if (emailField.invalid && emailField.touched) {
+        <p class="field-error">Informe um email válido.</p>
+      }
+      <label for="account-password"><app-icon name="lock" />Senha</label>
+      <div class="password-input-wrap">
+        <input
+          id="account-password"
+          [type]="passwordVisible() ? 'text' : 'password'"
+          name="password"
+          [(ngModel)]="password"
+          #passwordField="ngModel"
+          required
+          [minlength]="creatingAccount() ? 8 : 1"
+          maxlength="20"
+          [autocomplete]="creatingAccount() ? 'new-password' : 'current-password'"
+          [disabled]="submitting()"
+          [attr.aria-invalid]="passwordField.invalid && passwordField.touched"
+          aria-describedby="password-help"
+        />
+        <button
+          class="password-visibility"
+          type="button"
+          [disabled]="submitting()"
+          (click)="passwordVisible.update((value) => !value)"
+          [attr.aria-label]="passwordVisible() ? 'Ocultar senha' : 'Mostrar senha'"
+          [attr.aria-pressed]="passwordVisible()"
+        >
+          <app-icon [name]="passwordVisible() ? 'eye-off' : 'eye'" />
+        </button>
+      </div>
+      <p id="password-help" class="password-help">
+        {{
+          creatingAccount()
+            ? 'Use uma senha de 8 a 20 caracteres.'
+            : 'Informe a senha da sua conta.'
+        }}
+      </p>
+      @if (error(); as message) {
+        <p class="form-error" role="alert">{{ message }}</p>
+      }
+      <button class="submit-button" type="submit" [disabled]="submitting()">
+        {{ submitting() ? 'Aguarde…' : creatingAccount() ? 'Criar conta' : 'Entrar' }}
+      </button>
+    </form>
+    <div class="auth-alternative">
+      <span>{{ creatingAccount() ? 'Já tem uma conta?' : 'Ainda não tem conta?' }}</span>
+      <button type="button" (click)="switchMode(authForm)" [disabled]="submitting()">
+        {{ creatingAccount() ? 'Entrar' : 'Criar conta' }}
+      </button>
+    </div>
+  </section>
+</main>
