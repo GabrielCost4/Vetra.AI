@@ -117,16 +117,8 @@ POSTGRES_USER=vetra
 POSTGRES_PASSWORD=sua_senha_local
 POSTGRES_PORT=5432
 DATABASE_URL=postgresql+psycopg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@127.0.0.1:${POSTGRES_PORT}/${POSTGRES_DB}
-JWT_SECRET_KEY=cole_aqui_uma_chave_aleatoria_de_pelo_menos_32_bytes
+JWT_SECRET_KEY=**Gere uma chave rodando o comando: python -c "import secrets; print(secrets.token_urlsafe(48))"**
 ```
-
-Gere o valor de `JWT_SECRET_KEY` e copie a saída para o arquivo antes de iniciar a API:
-
-```bash
-python -c "import secrets; print(secrets.token_urlsafe(48))"
-```
-
-Se a senha contiver caracteres reservados de URL, use a codificação correspondente na `DATABASE_URL`. Não versione o arquivo `.env`.
 
 Inicie o PostgreSQL e consulte o estado do serviço:
 
